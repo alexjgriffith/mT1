@@ -1,0 +1,11 @@
+Package: mT1
+Title: Motifs in Tandem with One Another
+Version: 0.0.0.9000
+Authors@R: person("Alexander", "Griffith", , "griffitaj@gmail.com", role = c("aut", "cre"))
+Description: Identifies the distance between dna motifs in subsets of the genome. Builds the emperical PDF from individual motifs and treats the normalized convolution as the expected probobilities for the comparision of distance. Can be applied to ChIP-Seq peaks.
+Suggests:
+	Biostrings,
+	BSgenome.Hsapiens.UCSC.hg19
+Depends: R (>= 3.1.1)
+License: BSD
+LazyData: true
