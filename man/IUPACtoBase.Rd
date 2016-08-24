@@ -24,6 +24,6 @@ would become c("CAC","CCC","CGC","CTC").
 \examples{
 IUPACtoBase("HGATAA")
 IUPACtoBase("CANNTG")
-IUPACtoBase("CANNTG",TRUE)
+IUPACtoBase("CANNTG",TRUE)#!/usr/bin/env R
 }
 

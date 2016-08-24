@@ -16,7 +16,7 @@ data.frame(<motif1>,<motif2>,<max pvalue><loc max pvalue>)
 returns the pertanent infromation concerning obj
 }
 \examples{
-load(system.file("exdata","objMT1.RData",package="mT1"))
+load(system.file("extdata","objMT1.RData",package="mT1"))
 main(objMT1)
 }
 

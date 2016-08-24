@@ -1,16 +1,23 @@
+## This file is part of CCCA,
+## http://github.com/alexjgriffith/mT1/, 
+## and is Copyright (C) University of Ottawa, 2016. It is Licensed under 
+## the three-clause BSD License; see LICENSE.txt.
+## Author : Alexander Griffith
+## Contact: griffitaj@gmail.com
+
 #' Fasta
 #' 
 #' The nucleotide values for the genomic locations defined by peaks
 #' @format A DANStringSet with 5670 members:
-"fasta"
+"mT1_fasta"
 
 #' Jaspar
 #'
-"jaspar"
+"mT1_jaspar"
 
 #' objMT1
 #'
-"objMT1"
+"mT1_objMT1"
 
 #' peaks
 #'
@@ -23,4 +30,4 @@
 #'   \item{start}{starting base pair location}
 #'   \item{end}{ending base pair location}
 #' }
-"peaks"
+"mT1_peaks"

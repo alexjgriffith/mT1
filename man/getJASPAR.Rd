@@ -19,7 +19,7 @@ and it will return the name of the motif.
 }
 \examples{
 # load the required Jaspar motif data
-load(system.file("exdata","jaspar.RData",package="mT1"))
+load(system.file("extdata","jaspar.RData",package="mT1"))
 getJASPAR(jaspar$names[1])
 }
 

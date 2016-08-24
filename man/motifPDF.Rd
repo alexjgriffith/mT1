@@ -20,7 +20,7 @@ Generate a list of locations for a single motif.
 }
 \examples{
 ## load fasta file
-load(system.file("exdata","fasta.RData",package="mT1"))
+load(system.file("extdata","fasta.RData",package="mT1"))
 pdf<-motifPDF(fasta,"CANNTG")
 x<-seq(1:100)
 y<-combHeights(x,pdf[,2])[[1]]

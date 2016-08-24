@@ -1,3 +1,10 @@
+## This file is part of CCCA,
+## http://github.com/alexjgriffith/mT1/, 
+## and is Copyright (C) University of Ottawa, 2016. It is Licensed under 
+## the three-clause BSD License; see LICENSE.txt.
+## Author : Alexander Griffith
+## Contact: griffitaj@gmail.com
+
 #' IUPAC to base
 #'
 #' Transforms an IUPAC dna sequence into a string of neucleotides.
@@ -11,7 +18,7 @@
 #' @examples
 #' IUPACtoBase("HGATAA")
 #' IUPACtoBase("CANNTG")
-#' IUPACtoBase("CANNTG",TRUE)
+#' IUPACtoBase("CANNTG",TRUE)#!/usr/bin/env R
 IUPACtoBase<-function (char, rl = FALSE){
     IUPAC <- strsplit(char, "")[[1]]
     IUPACCharacters <- list("A", "C", "G", "T", c("A", "G"), 
@@ -72,14 +79,14 @@ complement<-function (string){
 #' @return the name of the motif if it came from the jaspar database
 #' @examples
 #' # load the required Jaspar motif data
-#' load(system.file("exdata","jaspar.RData",package="mT1"))
+#' load(system.file("extdata","jaspar.RData",package="mT1"))
 #' getJASPAR(jaspar$names[1])
 #' @export
 getJASPAR<-function(name){
     with(jaspar,{
         if(is.null(jfid)||is.null(jnames))
             stop(paste0("jaspar.RData must be loaded. ",
-                        "load(system.file(\"exdata\",\"jaspar.RData\"",
+                        "load(system.file(\"extdata\",\"jaspar.RData\"",
                         ",package=\"mT1\"))"))
         jfid[jnames==name]
     })
@@ -97,7 +104,7 @@ getJASPAR<-function(name){
 #' distance
 #' @examples
 #' ## load fasta file
-#' load(system.file("exdata","fasta.RData",package="mT1"))
+#' load(system.file("extdata","fasta.RData",package="mT1"))
 #' ## Find distances
 #' distances<-motifDistance(fasta,"CANNTG","HGATAA")
 #'
@@ -191,7 +198,7 @@ diffMotif<-function(fasta,motifs,mloc,cloc,i=1,j=2,min=200,combine="Merged"){
 #' distance
 #' @examples
 #' ## load fasta file
-#' load(system.file("exdata","fasta.RData",package="mT1"))
+#' load(system.file("extdata","fasta.RData",package="mT1"))
 #' pdf<-motifPDF(fasta,"CANNTG")
 #' x<-seq(1:100)
 #' y<-combHeights(x,pdf[,2])[[1]]
@@ -271,7 +278,7 @@ makeTitle.mT1<-function(obj,i){
 #'
 #' returns the pertanent information in an object
 #' @examples
-#' load(system.file("exdata","objMT1.RData",package="mT1"))
+#' load(system.file("extdata","objMT1.RData",package="mT1"))
 #' main(1)
 #' main(objMT1)
 #' @export
@@ -295,7 +302,7 @@ main.default<-function(x){
 #' @param obj mT1 object
 #' @return data.frame(<motif1>,<motif2>,<max pvalue><loc max pvalue>)
 #' @examples
-#' load(system.file("exdata","objMT1.RData",package="mT1"))
+#' load(system.file("extdata","objMT1.RData",package="mT1"))
 #' main(objMT1)
 #' @export
 main.mT1<-function(obj){
@@ -356,8 +363,9 @@ plot.mT1<-function(obj,motif1=NULL,motif2=NULL,i=NULL){
         plot(density(dens[[n2]][,2]),main=motif2)
         plot(mp[[i]],type="l",ylab="p",main="Convolution")
         plot(hs[[i]],type="l",ylab="Frequency",
-             Main(motifs[combs[i,1]],"-",motifs[combs[i,2]]))
-        plot(getHeights(hs[[i]]),type="l",xlab="Height",
+             main=paste0(motifs[combs[i,1]],"-",motifs[combs[i,2]]))
+        plot(combHeights(seq(min(hs[[i]],max(hs[[i]]))),
+                         hs[[i]])[[1]],type="l",xlab="Height",
              ylab="Frequency",main="Freq")
         plot(pvalue[[i]],type="l",ylab="p-value",xlab="Index",
              main="Tests")
@@ -378,10 +386,10 @@ plot.mT1<-function(obj,motif1=NULL,motif2=NULL,i=NULL){
 #' library(Biostrings) # needed to get fasta data from genomic co-ords
 #' library(BSgenome.Hsapiens.UCSC.hg19) # genome
 #' ## load a set of Jaspar motifs as strings
-#' load(system.file("exdata","jaspar.RData",package="mT1"))
+#' load(system.file("extdata","jaspar.RData",package="mT1"))
 #' 
 #' ## Example set of peaks
-#' load(system.file("exdata","peaks.RData",package="mT1"))
+#' load(system.file("extdata","peaks.RData",package="mT1"))
 #' 
 #' ## Transform genomic co-ords into neucleotides
 #' genome<-BSgenome.Hsapiens.UCSC.hg19
@@ -429,7 +437,7 @@ mT1<-function(fasta,motifs,verbose=FALSE,cl=NULL){
     a<-lapply(motifs,function(x) findLocs(fasta,mloc[[x]],cloc[[x]],x))
     mT1<-list(diff=t1,dens=a,sig=large,motifs=motifs,combs=tofind)
     ## determine the p-values for each motif comb
-    width<-nchar(fasta[1])
+    width<-fasta@ranges@width[1]
     prob<-apply(cbind(tofind,seq(dim(tofind)[1])),1,
                 function(x) ePD(t1[[x[3]]],a[[x[1]]],a[[x[2]]],
                                 width))
@@ -492,7 +500,7 @@ ePD<-function(t1,a,b,width){
     if(any(is.na(t1))){        
         return(list(hs=NA,mp=NA,pvalue=NA))
     }
-    hs<-combHeights(seq(-with+1,width-1),t1[,2])[[1]]
+    hs<-combHeights(seq((-1* width+1),width-1),t1[,2])[[1]]
     n<-length(t1[,2])
     if(max(hs)>n){
         stop("n >hs")

@@ -10,7 +10,7 @@ main(x, ...)
 returns the pertanent information in an object
 }
 \examples{
-load(system.file("exdata","objMT1.RData",package="mT1"))
+load(system.file("extdata","objMT1.RData",package="mT1"))
 main(1)
 main(objMT1)
 }

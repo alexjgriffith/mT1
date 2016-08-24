@@ -23,7 +23,7 @@ represented by fasta.
 }
 \examples{
 ## load fasta file
-load(system.file("exdata","fasta.RData",package="mT1"))
+load(system.file("extdata","fasta.RData",package="mT1"))
 ## Find distances
 distances<-motifDistance(fasta,"CANNTG","HGATAA")
 
