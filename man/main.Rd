@@ -10,8 +10,9 @@ main(x, ...)
 returns the pertanent information in an object
 }
 \examples{
-load(system.file("extdata","objMT1.RData",package="mT1"))
+## load(system.file("extdata","objMT1.RData",package="mT1"))
+sampleMT1<-mT1_sampleMT1
 main(1)
-main(objMT1)
+main(sampleMT1)
 }
 

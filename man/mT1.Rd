@@ -29,11 +29,11 @@ Generates a mT1 object from DNAStringSet and a vector of motifs
 library(Biostrings) # needed to get fasta data from genomic co-ords
 library(BSgenome.Hsapiens.UCSC.hg19) # genome
 ## load a set of Jaspar motifs as strings
-load(system.file("extdata","jaspar.RData",package="mT1"))
-
+## load(system.file("extdata","jaspar.RData",package="mT1"))
+jaspar<-mT1_jaspar
 ## Example set of peaks
-load(system.file("extdata","peaks.RData",package="mT1"))
-
+## load(system.file("extdata","peaks.RData",package="mT1"))
+peaks<-mT1_peaks
 ## Transform genomic co-ords into neucleotides
 genome<-BSgenome.Hsapiens.UCSC.hg19
 fasta<-getSeq(genome,peaks$chr,start=peaks$start,end=peaks$end)

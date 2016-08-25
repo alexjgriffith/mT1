@@ -79,11 +79,12 @@ complement<-function (string){
 #' @return the name of the motif if it came from the jaspar database
 #' @examples
 #' # load the required Jaspar motif data
-#' load(system.file("extdata","jaspar.RData",package="mT1"))
-#' getJASPAR(jaspar$names[1])
+#' # load(system.file("extdata","mT1_jaspar.RData",package="mT1"))
+#' a<-mT1_jaspar$names[1]
+#' getJASPAR(a)
 #' @export
 getJASPAR<-function(name){
-    with(jaspar,{
+    with(mT1_jaspar,{
         if(is.null(jfid)||is.null(jnames))
             stop(paste0("jaspar.RData must be loaded. ",
                         "load(system.file(\"extdata\",\"jaspar.RData\"",
@@ -104,7 +105,8 @@ getJASPAR<-function(name){
 #' distance
 #' @examples
 #' ## load fasta file
-#' load(system.file("extdata","fasta.RData",package="mT1"))
+#' ## load(system.file("extdata","fasta.RData",package="mT1"))
+#' fasta<-mT1_fasta
 #' ## Find distances
 #' distances<-motifDistance(fasta,"CANNTG","HGATAA")
 #'
@@ -198,7 +200,8 @@ diffMotif<-function(fasta,motifs,mloc,cloc,i=1,j=2,min=200,combine="Merged"){
 #' distance
 #' @examples
 #' ## load fasta file
-#' load(system.file("extdata","fasta.RData",package="mT1"))
+#' ## load(system.file("extdata","fasta.RData",package="mT1"))
+#' fasta<-mT1_fasta
 #' pdf<-motifPDF(fasta,"CANNTG")
 #' x<-seq(1:100)
 #' y<-combHeights(x,pdf[,2])[[1]]
@@ -278,9 +281,10 @@ makeTitle.mT1<-function(obj,i){
 #'
 #' returns the pertanent information in an object
 #' @examples
-#' load(system.file("extdata","objMT1.RData",package="mT1"))
+#' ## load(system.file("extdata","objMT1.RData",package="mT1"))
+#' sampleMT1<-mT1_sampleMT1
 #' main(1)
-#' main(objMT1)
+#' main(sampleMT1)
 #' @export
 main<-function(x,...){
     UseMethod("main",x)
@@ -302,8 +306,9 @@ main.default<-function(x){
 #' @param obj mT1 object
 #' @return data.frame(<motif1>,<motif2>,<max pvalue><loc max pvalue>)
 #' @examples
-#' load(system.file("extdata","objMT1.RData",package="mT1"))
-#' main(objMT1)
+#' ## load(system.file("extdata","objMT1.RData",package="mT1"))
+#' 
+#' main(mT1_sampleMT1)
 #' @export
 main.mT1<-function(obj){
     main<-data.frame(t(apply(obj$combs[!obj$sig,],1,
@@ -333,7 +338,7 @@ print.mT1<-function(obj){
     cat(paste("        ",obj$motifs[2:length(obj$motifs)],collapse="\n"))
     cat("\n\n")
     cat(paste0("combs: ",length(obj$combs), "\n"))
-    cat(paste0("sufficent: ",sum(!test$sig)),"\n")
+    cat(paste0("sufficent: ",sum(!obj$sig)),"\n")
     main<-main.mT1(obj)
     print(main)
 }
@@ -350,12 +355,13 @@ print.mT1<-function(obj){
 plot.mT1<-function(obj,motif1=NULL,motif2=NULL,i=NULL){
     if(!is.null(i)){
         main<-data.frame(t(apply(obj$combs[!obj$sig,],1,function(x) obj$motifs[x])))
-        motif1<-main[i,1]
-        motif2<-main[i,2]
+        motif1<-as.character(main[i,1])
+        motif2<-as.character(main[i,2])
     }
     with(obj,{
-        n1<-which(motifs==motif1)
-        n2<-which(motifs==motif2)
+        n1<-which(motifs==motif1)[1]
+        n2<-which(motifs==motif2)[1]
+        print(c(n1,n2))
         i<-union(which(combs[,1]==n1 & combs[,2] ==n2),
                  which(combs[,1]==n2 & combs[,2] ==n1))[1]
         par(mfrow=c(3,2))
@@ -364,7 +370,7 @@ plot.mT1<-function(obj,motif1=NULL,motif2=NULL,i=NULL){
         plot(mp[[i]],type="l",ylab="p",main="Convolution")
         plot(hs[[i]],type="l",ylab="Frequency",
              main=paste0(motifs[combs[i,1]],"-",motifs[combs[i,2]]))
-        plot(combHeights(seq(min(hs[[i]],max(hs[[i]]))),
+        plot(combHeights(seq(0,max(hs[[i]])),
                          hs[[i]])[[1]],type="l",xlab="Height",
              ylab="Frequency",main="Freq")
         plot(pvalue[[i]],type="l",ylab="p-value",xlab="Index",
@@ -386,11 +392,11 @@ plot.mT1<-function(obj,motif1=NULL,motif2=NULL,i=NULL){
 #' library(Biostrings) # needed to get fasta data from genomic co-ords
 #' library(BSgenome.Hsapiens.UCSC.hg19) # genome
 #' ## load a set of Jaspar motifs as strings
-#' load(system.file("extdata","jaspar.RData",package="mT1"))
-#' 
+#' ## load(system.file("extdata","jaspar.RData",package="mT1"))
+#' jaspar<-mT1_jaspar
 #' ## Example set of peaks
-#' load(system.file("extdata","peaks.RData",package="mT1"))
-#' 
+#' ## load(system.file("extdata","peaks.RData",package="mT1"))
+#' peaks<-mT1_peaks
 #' ## Transform genomic co-ords into neucleotides
 #' genome<-BSgenome.Hsapiens.UCSC.hg19
 #' fasta<-getSeq(genome,peaks$chr,start=peaks$start,end=peaks$end)
@@ -409,6 +415,10 @@ plot.mT1<-function(obj,motif1=NULL,motif2=NULL,i=NULL){
 #' plot(objMT1,i=1)
 #' @export
 mT1<-function(fasta,motifs,verbose=FALSE,cl=NULL){
+    if(length(motifs)<3){
+        warning("must provide mT1 with more than 2 motifs")
+        return (NA)
+    }
     ## find which fasta indicies have the motifs of interest
     mloc<-lapply(motifs,function(x) grep(IUPACtoBase(x), fasta))
     cloc<-lapply(motifs,function(x) grep(complement(IUPACtoBase(x)),fasta))
@@ -461,7 +471,7 @@ mT1<-function(fasta,motifs,verbose=FALSE,cl=NULL){
 #' @return p-value
 #' @export
 btest<-function(k,n,p,min=10){
-    if(n>0) # n must be greater than 0
+    if(n<1) # n must be greater than 0
         return(0)
     else if(k>min) # ensure that there are more k than min
         return(log(binom.test(k,n,p)$p.value,10))
@@ -501,7 +511,7 @@ ePD<-function(t1,a,b,width){
         return(list(hs=NA,mp=NA,pvalue=NA))
     }
     hs<-combHeights(seq((-1* width+1),width-1),t1[,2])[[1]]
-    n<-length(t1[,2])
+    n<-sum(hs)
     if(max(hs)>n){
         stop("n >hs")
     }

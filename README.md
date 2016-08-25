@@ -49,7 +49,7 @@ Compare the distances between two motifs in a set of genome subsets.
 ## libraries
 library(mT1)
 ## load the fasta file for analysis
-load(system.file("exdata","fasta.RData",package="mT1"))
+fasta<-mT1_fasta
 
 ## Find the distances between CANNTG and GATAA for on each string
 ## they share. The distances are relative to the start of each
@@ -96,10 +96,10 @@ library(Biostrings) # needed to get fasta data from genomic co-ords
 library(BSgenome.Hsapiens.UCSC.hg19) # genome
 
 ## load a set of Jaspar motifs as strings
-load(system.file("exdata","jaspar.RData",package="mT1"))
+jaspar<-mT1_jaspar
 
 ## Example set of peaks
-load(system.file("exdata","peaks.RData",package="mT1"))
+peaks<-mT1_peaks
 
 ## Transform genomic co-ords into neucleotides
 genome<-BSgenome.Hsapiens.UCSC.hg19

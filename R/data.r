@@ -17,7 +17,7 @@
 
 #' objMT1
 #'
-"mT1_objMT1"
+"mT1_sampleMT1"
 
 #' peaks
 #'
