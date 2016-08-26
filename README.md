@@ -1,12 +1,12 @@
 # mT1
-## Motif's in Tandem to One Another
+## Motifs in Tandem With One Another
 ### Alexander Griffith
 ### Aug 24 2016
 
 **mT1** identifies the distance between DNA motifs in subsets of the genome. First it builds the empirical PDF from individual motifs, then it generates the expectations for the distances between the two motifs. **mT1** was designed to be applied to ChIP-Seq peaks.
 ___
 ### Installation
-Currently only the source is available, compiled versions for Windows and Mac will be made available once mT1 is submited to Bioconductor. There are two easy ways to install the pacakge, via command line, and within R itself. The `devtools` package is required to install from within R.
+Currently only the source is available, compiled versions for Windows and Mac will be made available once mT1 is submitted to Bioconductor. There are two easy ways to install the package, via command line, and within R itself. The `devtools` package is required to install from within R.
 
 
 From the command line:
