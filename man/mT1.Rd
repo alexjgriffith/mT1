@@ -42,14 +42,14 @@ fasta<-getSeq(genome,peaks$chr,start=peaks$start,end=peaks$end)
 motifs<-c("CANNTG","GATAA",jaspar$jsublM[1:8])
 
 ## Find the preferred distances between `motifs` under the peaks
-objMT1<-mT1(fasta,motifs)
+my_sampleMT1<-mT1(fasta,motifs)
 
 ## plot based on string
-plot(objMT1,"CANNTG","GATAA")
+plot(my_sampleMT1,"CANNTG","GATAA")
 
 ## Plot based on printed order
-print(objMT)
-plot(objMT1,i=1)
+print(my_sampleMT1)
+plot(my_sampleMT1,i=1)
 }
 \author{
 "Alexander Griffith <griffitaj@gmail.com>"

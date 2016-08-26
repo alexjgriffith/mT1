@@ -19,7 +19,7 @@ to the `Biostrings::complement` function. To transform IUPAC characters
 into neucleotide form refer to IUPACtoBase.
 }
 \examples{
-complement(IUPACtoBase("CANNTG"))
-complement("CA[AC]TT[ACGT]GG")
+mT1:::complement(mT1:::IUPACtoBase("CANNTG"))
+mT1:::complement("CA[AC]TT[ACGT]GG")
 }
 

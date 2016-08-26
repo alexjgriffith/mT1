@@ -6,6 +6,9 @@ load("~/Dropbox/UTX-Alex/Paper/Raw Data/peakLocations.RData")
 
 mT1_fasta<-PCA$fasta
 mT1_peaks<-PCA$bed
+
+rownames(mT1)<-NULL
+    
 mT1_jaspar<-jaspar
 mT1_sampleMT1<-mT1(mT1_fasta,c("CANNTG","HGATAA",mT1_jaspar$jsublM[1:10]))
 

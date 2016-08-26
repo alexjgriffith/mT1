@@ -30,7 +30,7 @@ distances<-motifDistance(fasta,"CANNTG","HGATAA")
 
 ## Determine the range of the motif locations and plot the
 ## frequency
-width<-nchar(fasta[1]) # all fasta strings should be the same width
+width<-fasta@ranges@width[1] # all fasta strings should be the same width
 r<-seq(-width+1,width-1)
 y<-combHeights(r,distances[,2])[[1]]
 plot(r,y,main="CANNTG-HGATAA")

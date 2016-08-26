@@ -1,7 +1,7 @@
-## This file is part of CCCA,
+## This file is part of mT1
 ## http://github.com/alexjgriffith/mT1/, 
 ## and is Copyright (C) University of Ottawa, 2016. It is Licensed under 
-## the three-clause BSD License; see LICENSE.txt.
+## the GPL License; see LICENSE.txt.
 ## Author : Alexander Griffith
 ## Contact: griffitaj@gmail.com
 
@@ -16,9 +16,9 @@
 #' @param rl flag to return all variants
 #' @return Character containing neucleotides + brackets
 #' @examples
-#' IUPACtoBase("HGATAA")
-#' IUPACtoBase("CANNTG")
-#' IUPACtoBase("CANNTG",TRUE)#!/usr/bin/env R
+#' mT1:::IUPACtoBase("HGATAA")
+#' mT1:::IUPACtoBase("CANNTG")
+#' mT1:::IUPACtoBase("CANNTG",TRUE)#!/usr/bin/env R
 IUPACtoBase<-function (char, rl = FALSE){
     IUPAC <- strsplit(char, "")[[1]]
     IUPACCharacters <- list("A", "C", "G", "T", c("A", "G"), 
@@ -60,8 +60,8 @@ IUPACtoBase<-function (char, rl = FALSE){
 #' @param string the input string of nucleotides
 #' @return The composite string
 #' @examples
-#' complement(IUPACtoBase("CANNTG"))
-#' complement("CA[AC]TT[ACGT]GG")
+#' mT1:::complement(mT1:::IUPACtoBase("CANNTG"))
+#' mT1:::complement("CA[AC]TT[ACGT]GG")
 complement<-function (string){
     chars <- c("A", "G", "C", "T", "[", "]")
     names(chars) <- c("T", "C", "G", "A", "]", "[")
@@ -112,7 +112,7 @@ getJASPAR<-function(name){
 #'
 #' ## Determine the range of the motif locations and plot the
 #' ## frequency
-#' width<-nchar(fasta[1]) # all fasta strings should be the same width
+#' width<-fasta@@ranges@@width[1] # all fasta strings should be the same width
 #' r<-seq(-width+1,width-1)
 #' y<-combHeights(r,distances[,2])[[1]]
 #' plot(r,y,main="CANNTG-HGATAA")
@@ -135,7 +135,7 @@ motifDistance<-function(fasta,motif1,motif2){
 #' @param mloc list of locations of each motif in fasta
 #' @param cloc list of locations of each compositemotif in fasta
 #' @param i index 1
-#' @param 2 index 2
+#' @param j index 2
 #' @param min numerical atomic, minimum length of mloc[[i or j]]
 #' @param combine Merged|First
 #' @return two columns , the first being the index the second being the
@@ -259,106 +259,94 @@ findLocs<-function(fasta,mloc,cloc,n1,combine="Merged"){
 }
 
 #' Make Title
-#' 
-#' generic makes title for a plot
+#'
+#' Generates a title to be used for plotting object x
+#' @param x obj to make title from
+#' @param ... possible properties
+#' @rdname makeTitle
 makeTitle<-function(x,...){
     UseMethod("makeTitle",x)
 }
 
-#' Make Title mT1
-#'
-#' Generates a title based on the composite motifs of a combination
-#' @param obj mT1 object
-#' @param i indici of obj$combs
-#' @return atomic Character with motif info
-makeTitle.mT1<-function(obj,i){
-    with(obj,{
+
+#' @return Atomic Character with motif info
+#' @param i print index
+#' @rdname makeTitle
+#' @method makeTitle mT1
+#' @export
+makeTitle.mT1<-function(x,i,...){
+    with(x,{
         do.call(paste,append(lapply(combs[i,],function(x) motifs[x]),list(sep="-")))
     })
 }
 
+
 #' main
 #'
 #' returns the pertanent information in an object
+#' @param x obj containing information to extract
+#' @param ... variables pertaining to the extraction
 #' @examples
 #' ## load(system.file("extdata","objMT1.RData",package="mT1"))
 #' sampleMT1<-mT1_sampleMT1
 #' main(1)
 #' main(sampleMT1)
+#' @rdname main
 #' @export
 main<-function(x,...){
     UseMethod("main",x)
 }
 
-#' main default
-#' 
-#' without a class simply return x
-#' @examples
-#' main(1)
+#' @return x unchanged
+#' @rdname main
+#' @method main default
 #' @export
-main.default<-function(x){
+main.default<-function(x,...){
     x
 }
 
-#' main mT1
-#' 
-#' returns the pertanent infromation concerning obj
-#' @param obj mT1 object
 #' @return data.frame(<motif1>,<motif2>,<max pvalue><loc max pvalue>)
-#' @examples
-#' ## load(system.file("extdata","objMT1.RData",package="mT1"))
-#' 
-#' main(mT1_sampleMT1)
+#' @rdname main
+#' @method main mT1
 #' @export
-main.mT1<-function(obj){
-    main<-data.frame(t(apply(obj$combs[!obj$sig,],1,
-                             function(x) obj$motifs[x])))
+main.mT1<-function(x,...){
+    main<-data.frame(t(apply(x$combs[!x$sig,],1,
+                             function(i) x$motifs[i])))
     if(length(main)>0){
         colnames(main)<-c("motif1","motif2")
-        mpv<-sapply(which(!obj$sig),function(x)
-            min(obj$pvalue[[x]]))
-        mpvl<-sapply(which(!obj$sig),function(x)
-            which.min(obj$pvalue[[x]])-300)
+        mpv<-sapply(which(!x$sig),function(i)
+            min(x$pvalue[[i]]))
+        mpvl<-sapply(which(!x$sig),function(i)
+            which.min(x$pvalue[[i]])-300)
         return(data.frame(main,mpv,mpvl))
     }
     else
         return (NULL)
 }
 
-
-#' print mT1
-#'
-#' Prints a summary of the mT1 object.
-#' @param obj mT1 object
+#' @method print mT1
 #' @export
-print.mT1<-function(obj){
+print.mT1<-function(x,...){
     #cat("mT1\n\n")
     cat("motifs:  ")
-    cat(paste0(obj$motifs[1],"\n"))
-    cat(paste("        ",obj$motifs[2:length(obj$motifs)],collapse="\n"))
+    cat(paste0(x$motifs[1],"\n"))
+    cat(paste("        ",x$motifs[2:length(x$motifs)],collapse="\n"))
     cat("\n\n")
-    cat(paste0("combs: ",length(obj$combs), "\n"))
-    cat(paste0("sufficent: ",sum(!obj$sig)),"\n")
-    main<-main.mT1(obj)
+    cat(paste0("combs: ",length(x$combs), "\n"))
+    cat(paste0("sufficent: ",sum(!x$sig)),"\n")
+    main<-main.mT1(x)
     print(main)
 }
 
-#' plot mT1
-#'
-#' Used to plot the results of mT1. Note this does not accept variable
-#' arguments to `plot.default`.
-#' @param obj mT1 object
-#' @param motif1 motif in set analyzed
-#' @param motif2 motif in set analyzed
-#' @param i index value
+#' @method plot mT1
 #' @export
-plot.mT1<-function(obj,motif1=NULL,motif2=NULL,i=NULL){
+plot.mT1<-function(x,motif1=NULL,motif2=NULL,i=NULL,...){
     if(!is.null(i)){
-        main<-data.frame(t(apply(obj$combs[!obj$sig,],1,function(x) obj$motifs[x])))
+        main<-data.frame(t(apply(x$combs[!x$sig,],1,function(i) x$motifs[i])))
         motif1<-as.character(main[i,1])
         motif2<-as.character(main[i,2])
     }
-    with(obj,{
+    with(x,{
         n1<-which(motifs==motif1)[1]
         n2<-which(motifs==motif2)[1]
         print(c(n1,n2))
@@ -405,14 +393,14 @@ plot.mT1<-function(obj,motif1=NULL,motif2=NULL,i=NULL){
 #' motifs<-c("CANNTG","GATAA",jaspar$jsublM[1:8])
 #' 
 #' ## Find the preferred distances between `motifs` under the peaks
-#' objMT1<-mT1(fasta,motifs)
+#' my_sampleMT1<-mT1(fasta,motifs)
 #' 
 #' ## plot based on string
-#' plot(objMT1,"CANNTG","GATAA")
+#' plot(my_sampleMT1,"CANNTG","GATAA")
 #' 
 #' ## Plot based on printed order
-#' print(objMT)
-#' plot(objMT1,i=1)
+#' print(my_sampleMT1)
+#' plot(my_sampleMT1,i=1)
 #' @export
 mT1<-function(fasta,motifs,verbose=FALSE,cl=NULL){
     if(length(motifs)<3){

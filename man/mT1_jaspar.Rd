@@ -4,18 +4,18 @@
 \name{mT1_jaspar}
 \alias{mT1_jaspar}
 \title{Jaspar}
-\format{\preformatted{List of 4
- $ jnames: chr [1:519] "YTGTGGTT" "GCCYSAGGC" "CACGTG" "GCGTG" ...
- $ jfid  : chr [1:519] "RUNX1" "TFAP2A" "Arnt" "Ahr::Arnt" ...
- $ jl    : Named int [1:519] 571 105 217 940 0 0 0 35 20 26 ...
-  ..- attr(*, "names")= chr [1:519] "YTGTGGTT" "GCCYSAGGC" "CACGTG" "GCGTG" ...
- $ jsublM: chr [1:519] "MCWTNT" "HGATAA" "GGGGA" "TAAWNG" ...
+\format{A List with 4 members:
+\describe{
+  \item{jnames}{The composite motifs}
+  \item{jfid}{The names of the moitfs, same order as jnames}
+  \item{jl}{The numner of times a motif occured in the sample fasta file}
+  \item{jsublM}{jnames sorted by jl}
 }}
 \usage{
 mT1_jaspar
 }
 \description{
-Jaspar
+A ist containing composite motifs and names for the jaspar database
 }
 \keyword{datasets}
 

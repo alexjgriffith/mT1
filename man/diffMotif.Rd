@@ -18,11 +18,11 @@ diffMotif(fasta, motifs, mloc, cloc, i = 1, j = 2, min = 200,
 
 \item{i}{index 1}
 
+\item{j}{index 2}
+
 \item{min}{numerical atomic, minimum length of mloc[[i or j]]}
 
 \item{combine}{Merged|First}
-
-\item{2}{index 2}
 }
 \value{
 two columns , the first being the index the second being the

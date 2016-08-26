@@ -2,6 +2,8 @@
 
 S3method(main,default)
 S3method(main,mT1)
+S3method(makeTitle,mT1)
+S3method(plot,mT1)
 S3method(print,mT1)
 export(btest)
 export(combHeights)
@@ -11,4 +13,3 @@ export(mT1)
 export(main)
 export(motifDistance)
 export(motifPDF)
-export(plot.mT1)

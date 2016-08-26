@@ -2,11 +2,24 @@
 % Please edit documentation in R/main.r
 \name{makeTitle}
 \alias{makeTitle}
+\alias{makeTitle.mT1}
 \title{Make Title}
 \usage{
 makeTitle(x, ...)
+
+\method{makeTitle}{mT1}(x, i, ...)
+}
+\arguments{
+\item{x}{obj to make title from}
+
+\item{...}{possible properties}
+
+\item{i}{print index}
+}
+\value{
+Atomic Character with motif info
 }
 \description{
-generic makes title for a plot
+Generates a title to be used for plotting object x
 }
 

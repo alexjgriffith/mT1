@@ -1,9 +1,10 @@
-## This file is part of CCCA,
+## This file is part of mT1
 ## http://github.com/alexjgriffith/mT1/, 
 ## and is Copyright (C) University of Ottawa, 2016. It is Licensed under 
-## the three-clause BSD License; see LICENSE.txt.
+## the GPL License; see LICENSE.txt.
 ## Author : Alexander Griffith
 ## Contact: griffitaj@gmail.com
+
 
 #' Fasta
 #' 
@@ -13,10 +14,24 @@
 
 #' Jaspar
 #'
+#' A ist containing composite motifs and names for the jaspar database
+#' @format A List with 4 members:
+#' \describe{
+#'   \item{jnames}{The composite motifs}
+#'   \item{jfid}{The names of the moitfs, same order as jnames}
+#'   \item{jl}{The numner of times a motif occured in the sample fasta file}
+#'   \item{jsublM}{jnames sorted by jl}
+#' }
 "mT1_jaspar"
 
-#' objMT1
+#' sampleMT1
 #'
+#' A sample mT1 object for use in examples.
+#'
+#' It was derived using mT1_fasta and the motifs
+#' c("CANNTG","GATAA",mT1_jaspar$jsublM[1:10])
+#' @format mT1 object:
+#' 
 "mT1_sampleMT1"
 
 #' peaks

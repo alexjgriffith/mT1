@@ -2,9 +2,25 @@
 % Please edit documentation in R/main.r
 \name{main}
 \alias{main}
+\alias{main.default}
+\alias{main.mT1}
 \title{main}
 \usage{
 main(x, ...)
+
+\method{main}{default}(x, ...)
+
+\method{main}{mT1}(x, ...)
+}
+\arguments{
+\item{x}{obj containing information to extract}
+
+\item{...}{variables pertaining to the extraction}
+}
+\value{
+x unchanged
+
+data.frame(<motif1>,<motif2>,<max pvalue><loc max pvalue>)
 }
 \description{
 returns the pertanent information in an object

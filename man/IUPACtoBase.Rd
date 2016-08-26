@@ -22,8 +22,8 @@ expanded set of sequences will be returnd. For example CNC
 would become c("CAC","CCC","CGC","CTC").
 }
 \examples{
-IUPACtoBase("HGATAA")
-IUPACtoBase("CANNTG")
-IUPACtoBase("CANNTG",TRUE)#!/usr/bin/env R
+mT1:::IUPACtoBase("HGATAA")
+mT1:::IUPACtoBase("CANNTG")
+mT1:::IUPACtoBase("CANNTG",TRUE)#!/usr/bin/env R
 }
 
