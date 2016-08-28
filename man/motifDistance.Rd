@@ -7,23 +7,26 @@
 motifDistance(fasta, motif1, motif2)
 }
 \arguments{
-\item{fasta}{a DNAStringSet}
+\item{fasta}{A DNAStringSet with a set of genomic ranges}
 
-\item{motif1}{Character of IUPAC characters}
+\item{motif1}{A motif as an atomic Character of IUPAC characters}
 
-\item{motif2}{Character of IUPAC characters}
+\item{motif2}{A motif as an atomic Character of IUPAC characters}
 }
 \value{
-two columns , the first being the index the second being the
+a numeric vector represented by two columns, the first being
+the index the second being the position of the motif within that index.
 distance
 }
 \description{
-Find the distances between two motifs within a subset of the genome
-represented by fasta.
+Find the distances between two motifs within set of genomic ranges.
+The subsets are represented by DNAStringSet from the Biostrings package.
+If the index of genomic ranges for each motif is already known use
+\code{\link{diffMotif}}. If the distribution of motifs are already known
+look into mT1:::.motifDiffFromDens.
 }
 \examples{
 ## load fasta file
-## load(system.file("extdata","fasta.RData",package="mT1"))
 fasta<-mT1_fasta
 ## Find distances
 distances<-motifDistance(fasta,"CANNTG","HGATAA")

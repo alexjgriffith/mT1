@@ -5,34 +5,44 @@
 ## Author : Alexander Griffith
 ## Contact: griffitaj@gmail.com
 
-#' IUPAC to base
+#' IUPAC to Base
 #'
-#' Transforms an IUPAC dna sequence into a string of neucleotides.
-#' Combo characters are replaced by their compoenents in bracket.
-#' For example CNC -> C[ACGT]C. With the rl flag set to TRUE the
-#' expanded set of sequences will be returnd. For example CNC
+#' This function Transforms an IUPAC DNA sequence into a string of 
+#' neucleotides. Combo characters are replaced by their components in 
+#' bracket. For example CNC -> C[ACGT]C. With the rl flag set to TRUE the
+#' expanded set of sequences will be returned. For example CNC
 #' would become c("CAC","CCC","CGC","CTC").
 #' @param char the input string of IUPAC characters
 #' @param rl flag to return all variants
 #' @return Character containing neucleotides + brackets
 #' @examples
-#' mT1:::IUPACtoBase("HGATAA")
-#' mT1:::IUPACtoBase("CANNTG")
-#' mT1:::IUPACtoBase("CANNTG",TRUE)#!/usr/bin/env R
-IUPACtoBase<-function (char, rl = FALSE){
+#' mT1:::.IUPACtoBase("HGATAA")
+#' mT1:::.IUPACtoBase("CANNTG")
+#' mT1:::.IUPACtoBase("CANNTG",TRUE)#!/usr/bin/env R
+.IUPACtoBase<-function (char, rl = FALSE){
+    ## break atomic Character into a Character vector where the nchar
+    ## in each Character is 1
     IUPAC <- strsplit(char, "")[[1]]
+    ## List of IUPAC characters and their composition
+    ## IUPAC characters let you represent possible combinations of
+    ## neucleotides as a single character. For example N = [ACGT]
     IUPACCharacters <- list("A", "C", "G", "T", c("A", "G"), 
         c("C", "T"), c("C", "G"), c("A", "T"), c("G", "T"), c("A", 
             "C"), c("C", "G", "T"), c("A", "G", "T"), c("A", 
             "C", "T"), c("A", "C", "G"), c("A", "C", "G", "T"))
     names(IUPACCharacters) <- c("A", "C", "G", "T", "R", "Y", 
-        "S", "W", "K", "M", "B", "D", "H", "V", "N")
+                                "S", "W", "K", "M", "B", "D",
+                                "H", "V", "N")
+    ## Ensure all characters in char are IUPAC
     if (any(!IUPAC %in% names(IUPACCharacters))) {
         stop("Input string contains non IUPAC characters.")
     }
+    ## Transform IUPAC characters to their component base pairs
     vals <- sapply(IUPAC, function(x) {
         (IUPACCharacters[x])
     })
+    ## If the rl flag is set to true, set Base to a list of the
+    ## component base pairs
     if (rl) {
         Base <- c("")
         for (i in vals) {
@@ -41,6 +51,9 @@ IUPACtoBase<-function (char, rl = FALSE){
             Base <- kit
         }
     }
+    ## If the rl flag is false (default) concat all Base pair components.
+    ## If the components are not singleton enclose them in brackets. This
+    ## form allows for easy use in grep.
     else {
         Base <- c("")
         for (i in vals) if (length(i) == 1) 
@@ -56,56 +69,66 @@ IUPACtoBase<-function (char, rl = FALSE){
 #' Takes a string of neucleotides (ACTG) and returns the complement
 #' (TGAC). This works on strings only, for DNAStringSet please refer
 #' to the `Biostrings::complement` function. To transform IUPAC characters
-#' into neucleotide form refer to IUPACtoBase.
-#' @param string the input string of nucleotides
-#' @return The composite string
+#' into neucleotide form refer to \code{\link{IUPACtoBase}}.
+#' @param string the input string of nucleotides 
+#' @return The compliment composite string as an atomic Character
 #' @examples
-#' mT1:::complement(mT1:::IUPACtoBase("CANNTG"))
-#' mT1:::complement("CA[AC]TT[ACGT]GG")
-complement<-function (string){
+#' mT1:::.complement(mT1:::.IUPACtoBase("CANNTG"))
+#' mT1:::.complement("CA[AC]TT[ACGT]GG")
+.complement<-function (string){
+    ## Possible base pairs + Brackets
     chars <- c("A", "G", "C", "T", "[", "]")
     names(chars) <- c("T", "C", "G", "A", "]", "[")
+    ## Generate the complement
     paste(rev(sapply(strsplit(string, "")[[1]], function(x) {
         (chars[x])
     })), collapse = "")
 }
 
-#' Get Jaspar
+#' Get JASPAR
 #'
-#' To be used in conjuction with the jaspar.RData found in `extdata`.
+#' A function to be used in conjunction with the mT1_jaspar.
 #' Pass `getJASPAR` a composite motif from the jaspar database
 #' and it will return the name of the motif.
-#' @param name composite motifs IUPAC characters only
-#' @return the name of the motif if it came from the jaspar database
+#' @param name A composite motif. IUPAC DNA characters only.
+#' @return The name of the motif as an atomic character, if it came
+#' from the jaspar database, otherwise NULL.
 #' @examples
 #' # load the required Jaspar motif data
-#' # load(system.file("extdata","mT1_jaspar.RData",package="mT1"))
 #' a<-mT1_jaspar$names[1]
 #' getJASPAR(a)
 #' @export
 getJASPAR<-function(name){
     with(mT1_jaspar,{
-        if(is.null(jfid)||is.null(jnames))
+        ## make sure required global variables are loaded
+        if(is.null(mT1_jaspar$jfid)||is.null(mT1_jaspar$jnames)){
             stop(paste0("jaspar.RData must be loaded. ",
                         "load(system.file(\"extdata\",\"jaspar.RData\"",
                         ",package=\"mT1\"))"))
-        jfid[jnames==name]
+        }
+        ## Find appropriate jasapar final id from the name index
+        ret<-jfid[jnames==name]
+        ## Test if null, currently this step is redundant
+        ifelse(is.null(ret),NULL,ret)
     })
 }
 
 #' Motif Distance
 #'
-#' Find the distances between two motifs within a subset of the genome
-#' represented by fasta. 
+#' Find the distances between two motifs within set of genomic ranges.
+#' The subsets are represented by DNAStringSet from the Biostrings package.
+#' If the index of genomic ranges for each motif is already known use
+#' \code{\link{diffMotif}}. If the distribution of motifs are already known
+#' look into mT1:::.motifDiffFromDens.
 #' 
-#' @param fasta  a DNAStringSet
-#' @param motif1 Character of IUPAC characters
-#' @param motif2 Character of IUPAC characters
-#' @return two columns , the first being the index the second being the
+#' @param fasta  A DNAStringSet with a set of genomic ranges
+#' @param motif1 A motif as an atomic Character of IUPAC characters
+#' @param motif2 A motif as an atomic Character of IUPAC characters
+#' @return a numeric vector represented by two columns, the first being
+#' the index the second being the position of the motif within that index.
 #' distance
 #' @examples
 #' ## load fasta file
-#' ## load(system.file("extdata","fasta.RData",package="mT1"))
 #' fasta<-mT1_fasta
 #' ## Find distances
 #' distances<-motifDistance(fasta,"CANNTG","HGATAA")
@@ -119,46 +142,64 @@ getJASPAR<-function(name){
 #' @export
 motifDistance<-function(fasta,motif1,motif2){
     motifs<-c(motif1,motif2)
-    mloc<-lapply(motifs,function(x) grep(IUPACtoBase(x), fasta))
-    cloc<-lapply(motifs,function(x) grep(complement(IUPACtoBase(x)),fasta))
+    ## Find the location of all motifs
+    mloc<-lapply(motifs,function(x) grep(.IUPACtoBase(x), fasta))
+    ## Find the location of all motif complements
+    cloc<-lapply(motifs,function(x) grep(.complement(.IUPACtoBase(x)),fasta))
     names(mloc)<-motifs
     names(cloc)<-motifs
+    ## Call diff motifs to find the difference distribution between motif1
+    ## and motif2
     diffMotif(fasta,motifs,mloc,cloc)
 }
 
 #' Motif Difference
 #' 
 #' Find the distances between two motifs within a subset of the genome
-#' represented by fasta. 
-#' @param fasta DNAStringSet
-#' @param motifs list of motif Character Atomics
-#' @param mloc list of locations of each motif in fasta
-#' @param cloc list of locations of each compositemotif in fasta
-#' @param i index 1
-#' @param j index 2
+#' represented by fasta. If the distribution of motifs are already known
+#' look into mT1:::.motifDiffFromDens.
+#' @param fasta A DNAStringSet
+#' @param motifs The list of motif Character Atomics
+#' @param mloc A list of indicies  of each motif in fasta
+#' @param cloc A list of indicies of each composite motif in fasta
+#' @param i Motif index 1
+#' @param j Motif index index 2
 #' @param min numerical atomic, minimum length of mloc[[i or j]]
-#' @param combine Merged|First
-#' @return two columns , the first being the index the second being the
-#' distance
+#' @param combine What to do if two motifs occur in the same region
+#' Merged|First
+#' @return A numeric vector with two columns , the first being the
+#' genomic index the second being the distance.
 diffMotif<-function(fasta,motifs,mloc,cloc,i=1,j=2,min=200,combine="Merged"){
+    ## Select the motifs from index i an and j
     n1<-motifs[[i]]
     n2<-motifs[[j]]
+    ## Find the genomic regions that are shared between motifs
     sharedm<-intersect(mloc[[n1]],mloc[[n2]])
-    sharedc<-intersect(cloc[[n1]],cloc[[n2]])
+    sharedc<-intersect(cloc[[n1]],cloc[[n2]])    
     both<-intersect(sharedc,sharedm)
     ## if there are not enough overlaping locations return NA
     if(length(union(sharedm,sharedc))<min)
         return(NA);
-    l1m<-gregexpr(IUPACtoBase(n1), fasta[sharedm,],ignore.case=TRUE)
-    l2m<-gregexpr(IUPACtoBase(n2), fasta[sharedm,],ignore.case=TRUE)
-    l1c<-gregexpr(complement(IUPACtoBase(n1)), fasta[sharedc,],ignore.case=TRUE)
-    l2c<-gregexpr(complement(IUPACtoBase(n2)), fasta[sharedc,],ignore.case=TRUE)
+    ## Find the position of each motif in genomic regions that are shared
+    l1m<-gregexpr(.IUPACtoBase(n1), fasta[sharedm,],ignore.case=TRUE)
+    l2m<-gregexpr(.IUPACtoBase(n2), fasta[sharedm,],ignore.case=TRUE)
+    l1c<-gregexpr(.complement(.IUPACtoBase(n1)),
+                  fasta[sharedc,],ignore.case=TRUE)
+    l2c<-gregexpr(.complement(.IUPACtoBase(n2)),
+                  fasta[sharedc,],ignore.case=TRUE)
     ## Locations under the same peak are combined in two ways
     ## First: Keep the smallest distance
     ## Merged: Keep all distances   
     if(combine=="First"){
-        mh<-cbind(loc=sharedm,pos=mapply(function(a,b) {x<-unique(c(outer(a,b,Vectorize(function(i,j) i-j))));x[which.min(abs(x))]},l1m,l2m))
-        ch<-cbind(loc=sharedc,pos=mapply(function(a,b) {x<-unique(c(outer(a,b,Vectorize(function(i,j) j-i))));x[which.min(abs(x))]},l1c,l2c))
+        ## Determine the distance between motifs
+        mh<-cbind(loc=sharedm,pos=mapply(function(a,b){
+            x<-unique(c(outer(a,b,Vectorize(function(i,j) i-j))))
+            x[which.min(abs(x))]},l1m,l2m))
+        ch<-cbind(loc=sharedc,pos=mapply(function(a,b){
+            x<-unique(c(outer(a,b,Vectorize(function(i,j) j-i))))
+            x[which.min(abs(x))]},l1c,l2c))
+        ## Ensure that regions that have a motif and its complement found only
+        ## return a single distance
         p2<-ch[!ch[,1] %in% both,]
         p3<-mh[!mh[,1] %in% both,]        
         ret<-rbind(p2,p3)
@@ -168,21 +209,32 @@ diffMotif<-function(fasta,motifs,mloc,cloc,i=1,j=2,min=200,combine="Merged"){
         }
     }
     else if(combine=="Merged"){
+        ## A function that takes the distances between motifs and returns
+        ## a two column numerical array with the distances and their
+        ## genomic index.
         keep<-function(l1,l2,fun,shared){
-            pos<-mapply(function(a,b) {unique(c(outer(a,b,Vectorize(fun))))},l1,l2,SIMPLIFY=FALSE)
+            pos<-mapply(function(a,b) {
+                unique(c(outer(a,b,Vectorize(fun))))},l1,l2,SIMPLIFY=FALSE)
             lens<-lapply(pos,length)
-            loc<-unlist(mapply(function(x,n){rep(x,n)} ,shared,lens,SIMPLIFY=FALSE))
+            loc<-unlist(mapply(function(x,n){
+                rep(x,n)} ,shared,lens,SIMPLIFY=FALSE))
             cbind(loc=loc,pos=unlist(pos))
         }
+        ## Difference in motif length;
         dchar<-nchar(n2)-nchar(n1)
+        ## Determine the distances between motifs
         mh<-keep(l1m,l2m,function(i,j){i-j},sharedm)
         ch<-keep(l1c,l2c,function(i,j){j-i+dchar},sharedc)
+        ## Make sure palandromic motifs are not listed twice
         p2<-ch[!ch[,1] %in% both,]
         p3<-mh[!mh[,1] %in% both,]        
         x<-merge(as.data.frame(ch),as.data.frame(mh))
         ret<-rbind(do.call(cbind,c(x[order(x[,1]),])),p2,p3)
     }        
     colnames(ret)<-c("loc","pos")
+    ## A function used to make sure that occurances where the two motifs
+    ## overlap are set to 0. This prevents the occurrence of high valued
+    ## variants such as CANNTG and CACCTG with a prefered distance of 0.
     clean<-function(df){
         x<-df[,2]
         change<- x>= (- nchar(n2)) & x<= nchar(n1)        
@@ -193,41 +245,54 @@ diffMotif<-function(fasta,motifs,mloc,cloc,i=1,j=2,min=200,combine="Merged"){
 
 #' Motif PDF
 #'
-#' Generate a list of locations for a single motif.
-#' @param fasta DNAStringSet from Biostrings
-#' @param motif single string, containing only DNA IUPAC characters
-#' @return two columns , the first being the instance the second being the
-#' distance
+#' Generate a distribution of locations for a single motif within a set
+#' of genomic regions.
+#' @param fasta A DNAStringSet from Biostrings.
+#' @param motif An atomic Character containing only DNA IUPAC characters
+#' @return A numeric vector with two columns , the first being the index
+#' the second being the distance
 #' @examples
 #' ## load fasta file
-#' ## load(system.file("extdata","fasta.RData",package="mT1"))
 #' fasta<-mT1_fasta
 #' pdf<-motifPDF(fasta,"CANNTG")
 #' x<-seq(1:100)
 #' y<-combHeights(x,pdf[,2])[[1]]
+#' ## plot the results
 #' plot(x,y,main="CANNTG",ylab="Frequency",xlab="Index")
 #' @export
-motifPDF<-function(fasta,motif){    
-    mloc<-grep(IUPACtoBase(motif), fasta)
-    cloc<-grep(complement(IUPACtoBase(motif)),fasta)
+motifPDF<-function(fasta,motif){
+    ## Find the indicies of the genomic ranges where the motif and
+    ## motif complement are present
+    mloc<-grep(.IUPACtoBase(motif), fasta)
+    cloc<-grep(.complement(.IUPACtoBase(motif)),fasta)
+    ## Use findlocs to build the distribution.
     findLocs(fasta,mloc,cloc,motif)
 }
 
 #' Find Motif Locations
 #'
-#' Finds the location of motifs on each indici of fasta. The results can
+#' Finds the position of motifs on each index of fasta. The results can
 #' be used to build the emperical PDF of motif locations.
-#' @param fasta DNAStringSet
-#' @param mloc fasta indicies that have  motifs
-#' @param cloc fasta indicies that have compliment motifs
-#' @param n1 motif name, Atomic Character of only IUPAC characters
+#' @param fasta A DNAStringSet
+#' @param mloc fasta The indicies that have  motifs
+#' @param cloc fasta The indicies that have compliment motifs
+#' @param n1 The motif name, an Atomic Character of only IUPAC characters
 #' @param combine If two motifs are found on the same index Merged|First
-#' @return two columns , the first being the instance the second being the
+#' @return Two columns , the first being the instance the second being the
 #' distance
 findLocs<-function(fasta,mloc,cloc,n1,combine="Merged"){
-    l1m<-gregexpr(IUPACtoBase(n1), fasta[mloc],ignore.case=TRUE)
-    l1c<-gregexpr(complement(IUPACtoBase(n1)),fasta[cloc],ignore.case=TRUE)
+    ## Find the positions of the individual motif n1
+    l1m<-gregexpr(.IUPACtoBase(n1), fasta[mloc],ignore.case=TRUE)
+    l1c<-gregexpr(.complement(.IUPACtoBase(n1)),fasta[cloc],ignore.case=TRUE)
     both<-intersect(mloc,cloc)
+    ## The remainder of this function is very similar to motifDiffs
+    ## applied to a single motif
+    keep<-function(l,loc){
+        pos=unlist(lapply(l,unique))
+        len<-sapply(l,length)
+        eloc<-unlist(mapply(function(x,n)rep(x,n),loc,len,SIMPLIFY=FALSE))
+        cbind(loc=eloc,pos=pos)
+    }
     if(combine=="First"){
         mh<-cbind(loc=mloc,sapply(l1m,function(x) x[which.min(abs(x))]))
         ch<-cbind(loc=cloc,sapply(l1c,function(x) x[which.min(abs(x))]))    
@@ -236,32 +301,35 @@ findLocs<-function(fasta,mloc,cloc,n1,combine="Merged"){
         ret<-rbind(p2,p3)
         if(length(both)>0){        
             p1<-cbind(both,apply(cbind(ch[ch[,1] %in% both,2],mh[mh[,1] %in% both,2]),1,function(x) x[which.min(abs(x))]))
-            ret<-p1
+            ret<-rbind(ret,p1)
         }
+        colnames(ret)<-c("loc","pos")
     }
-    else if(combine=="Merged"){
-        keep<-function(l,loc){
-            pos=unlist(lapply(l,unique))
-            len<-sapply(l,length)
-            eloc<-unlist(mapply(function(x,n)rep(x,n),loc,len,SIMPLIFY=FALSE))
-            cbind(loc=eloc,pos=pos)
-        }
-        
+    else if(combine=="Merged"){        
         mh<-keep(l1m,mloc)
         ch<-keep(l1c,cloc)
         p2<-ch[!ch[,1] %in% both,]
         p3<-mh[!mh[,1] %in% both,]
         x<-merge(as.data.frame(ch),as.data.frame(mh))
         ret<-rbind(do.call(cbind,c(x[order(x[,1]),])),p2,p3)
+        colnames(ret)<-c("loc","pos")
     }
-    colnames(ret)<-c("loc","pos")
+    else{
+        ## This option should be used if you want to sort through the
+        ## occurances of motifs and their complements later.
+        mh<-cbind(keep(l1m,mloc),0)
+        ch<-cbind(keep(l1c,cloc),1)
+        ret<-rbind(mh,ch)
+        colnames(ret)<-c("loc","pos","dir")
+    }        
     ret[order(ret[,1]),]        
 }
 
 #' Make Title
 #'
-#' Generates a title to be used for plotting object x
-#' @param x obj to make title from
+#' A generic function that  Generates a title to be used for plotting
+#' an object.
+#' @param x The obj to make title from
 #' @param ... possible properties
 #' @rdname makeTitle
 makeTitle<-function(x,...){
@@ -269,55 +337,33 @@ makeTitle<-function(x,...){
 }
 
 
-#' @return Atomic Character with motif info
-#' @param i print index
+#' @return An Atomic Character with motif info
+#' @param i The index of interest from print(x)
 #' @rdname makeTitle
 #' @method makeTitle mT1
 #' @export
 makeTitle.mT1<-function(x,i,...){
     with(x,{
-        do.call(paste,append(lapply(combs[i,],function(x) motifs[x]),list(sep="-")))
+        do.call(paste,append(lapply(combs[i,],function(x)
+            motifs[x]),list(sep="-")))
     })
 }
 
+## remove these once R CMD check works with summary.mT1
 
-#' main
-#'
-#' returns the pertanent information in an object
-#' @param x obj containing information to extract
-#' @param ... variables pertaining to the extraction
-#' @examples
-#' ## load(system.file("extdata","objMT1.RData",package="mT1"))
-#' sampleMT1<-mT1_sampleMT1
-#' main(1)
-#' main(sampleMT1)
-#' @rdname main
-#' @export
-main<-function(x,...){
-    UseMethod("main",x)
-}
 
-#' @return x unchanged
-#' @rdname main
-#' @method main default
-#' @export
-main.default<-function(x,...){
-    x
-}
 
-#' @return data.frame(<motif1>,<motif2>,<max pvalue><loc max pvalue>)
-#' @rdname main
-#' @method main mT1
+#' @method summary mT1
 #' @export
-main.mT1<-function(x,...){
-    main<-data.frame(t(apply(x$combs[!x$sig,],1,
-                             function(i) x$motifs[i])))
+summary.mT1<-function(object,...){
+    main<-data.frame(t(apply(object$combs[!object$sig,],1,
+                             function(i) object$motifs[i])))
     if(length(main)>0){
         colnames(main)<-c("motif1","motif2")
-        mpv<-sapply(which(!x$sig),function(i)
-            min(x$pvalue[[i]]))
-        mpvl<-sapply(which(!x$sig),function(i)
-            which.min(x$pvalue[[i]])-300)
+        mpv<-sapply(which(!object$sig),function(i)
+            min(object$pvalue[[i]]))
+        mpvl<-sapply(which(!object$sig),function(i)
+            which.min(object$pvalue[[i]])-300)
         return(data.frame(main,mpv,mpvl))
     }
     else
@@ -334,7 +380,7 @@ print.mT1<-function(x,...){
     cat("\n\n")
     cat(paste0("combs: ",length(x$combs), "\n"))
     cat(paste0("sufficent: ",sum(!x$sig)),"\n")
-    main<-main.mT1(x)
+    main<-summary.mT1(x)
     print(main)
 }
 
@@ -366,16 +412,46 @@ plot.mT1<-function(x,motif1=NULL,motif2=NULL,i=NULL,...){
     })
 }
 
+#' Motif Difference From Density
+#'
+#' If two set of motif locations and positions are known this function
+#' can be used to determine the difference in motif location.
+#' 
+#' @param a The distribution of motif a
+#' @param b The distribution of motif b
+#' @param diff The difference in motif size between a and b
+#' @return A two column vector with location indexes and positions
+.motifDiffFromDens<-function(a,b,diff){
+    af<-as.data.frame(a)
+    bf<-as.data.frame(b)
+    colnames(af)<-c("loc","a","dir")
+    colnames(bf)<-c("loc","b","dir")
+    t2<-merge(af[af$dir==1,c(1,2)],bf[bf$dir==1,c(1,2)])
+    back<-data.frame(loc=t2[,1],pos=t2[,3]-t2[,2]+diff)
+    t3<-merge(af[af$dir==0,c(1,2)],bf[bf$dir==0,c(1,2)])
+    forw<-data.frame(loc=t3[,1],pos=t3[,2]-t3[,3])    
+    ret<-rbind(back,forw)    
+    #ret<-rbind(cbind(t3[,1],forw,0),cbind(t2[,1],back,1))
+    #colnames(ret)<-c("loc","pos","dir")
+    ret[!duplicated(ret),]
+}
 
-#' mT1
+
+
+#' Motifs in Tandem with One Another
 #'
-#' Generates a mT1 object from DNAStringSet and a vector of motifs
-#'
-#' @param fasta DNAStringSet
-#' @param motifs list motifs being compared, IUPAC chars only
-#' @param verbose flag to print motifs as completed
-#' @param cl cluster from makeForkCluster
-#' @return a mT1 object
+#' Generates a mT1 object from DNAStringSet and a vector of motifs. A mT1
+#' object can be used for the investigation of preferred motif positions
+#' and identifying composite motifs. There must be at least 3 motifs being
+#' compared. For the comparison of two motifs look at motifDiff. The purpose
+#' of a mT1 object is to identify novel preferred distances from a large
+#' set of motifs.
+#' @param fasta The set of genomic locations as a DNAStringSet
+#' @param motifs The list of three or more motifs being compared,
+#' IUPAC chars only.
+#' @param verbose A flag to print motifs as completed.
+#' @param cl A cluster from makeForkCluster
+#' @return A mT1 object
 #' @examples
 #' library(Biostrings) # needed to get fasta data from genomic co-ords
 #' library(BSgenome.Hsapiens.UCSC.hg19) # genome
@@ -403,52 +479,66 @@ plot.mT1<-function(x,motif1=NULL,motif2=NULL,i=NULL,...){
 #' plot(my_sampleMT1,i=1)
 #' @export
 mT1<-function(fasta,motifs,verbose=FALSE,cl=NULL){
+    ## Ensure that there are 3 motifs at least. For the comparison of
+    ## two motifs refer to motifDiff
     if(length(motifs)<3){
         warning("must provide mT1 with more than 2 motifs")
         return (NA)
     }
     ## find which fasta indicies have the motifs of interest
-    mloc<-lapply(motifs,function(x) grep(IUPACtoBase(x), fasta))
-    cloc<-lapply(motifs,function(x) grep(complement(IUPACtoBase(x)),fasta))
+    mloc<-lapply(motifs,function(x) grep(.IUPACtoBase(x), fasta))
+    cloc<-lapply(motifs,function(x) grep(.complement(.IUPACtoBase(x)),fasta))
     names(mloc)<-motifs
     names(cloc)<-motifs
+    ## Determine the individual PDFs for each motif
+    a<-lapply(motifs,function(x)
+        findLocs(fasta,mloc[[x]],cloc[[x]],x,"FALSE"))
     ## combination of all motifs
     tofind<-t(combn(seq(length(motifs)),2))
     ## check to see if diffMotif should be preformed in parallell
-    if(is.null(cl)){
-        t1<-apply(tofind,1,function(x){
-            if(verbose)
-                print(unlist(lapply(x,function(x) motifs[x])) )
-            diffMotif(fasta,motifs,mloc,cloc,x[1],x[2])
-        })
-    }
-    else{
-        t1<-parApply(cl,tofind,1,function(x){
-            if(verbose)
-                print(unlist(lapply(x,function(x) motifs[x])) )
-            diffMotif(fasta,motifs,mloc,cloc,x[1],x[2])
-        })
-    }
+    ## if(is.null(cl)){
+    ##     t1<-apply(tofind,1,function(x){
+    ##         if(verbose)
+    ##             print(unlist(lapply(x,function(x) motifs[x])) )
+    ##         diffMotif(fasta,motifs,mloc,cloc,x[1],x[2])
+    ##     })
+    ## }
+    ## else{
+    ##     t1<-parApply(cl,tofind,1,function(x){
+    ##         if(verbose)
+    ##             print(unlist(lapply(x,function(x) motifs[x])) )
+    ##         diffMotif(fasta,motifs,mloc,cloc,x[1],x[2])
+    ##     })
+    ## }
     ## Which motif combs had co-occuances
+    t1<-apply(tofind,1,function(x){
+        m1<-a[[x[1]]]
+        m2<-a[[x[2]]]
+        diff<-nchar(motifs[x[2]])-nchar(motifs[x[1]])
+        .motifDiffFromDens(m1,m2,diff)        
+    })
+    ## Which indicies have values
     large<-sapply(t1,function(x) all(unlist(is.na(x))))
-    ## Determine the individual PDFs for each motif
-    a<-lapply(motifs,function(x) findLocs(fasta,mloc[[x]],cloc[[x]],x))
     mT1<-list(diff=t1,dens=a,sig=large,motifs=motifs,combs=tofind)
     ## determine the p-values for each motif comb
+    ## If biostrings is loaded nchar(fasta) will be equivalent
+    ## Check this after any update to IRanges
     width<-fasta@ranges@width[1]
+    ## Determine probabilities 
     prob<-apply(cbind(tofind,seq(dim(tofind)[1])),1,
-                function(x) ePD(t1[[x[3]]],a[[x[1]]],a[[x[2]]],
+                function(x) .ePD(t1[[x[3]]],a[[x[1]]][,2],a[[x[2]]][,2],
                                 width))
     ## Build and return the mT1 object
     mT1<-append(mT1,list(width=width,hs=lapply(prob,function(x) x[["hs"]]),
                 mp=lapply(prob,function(x) x[["mp"]]),
                 pvalue=lapply(prob,function(x) x[["pvalue"]])))
+    ## Set class type mT1
     attr(mT1,"class")<-"mT1"
     mT1
 
 }
 
-#' binomial test
+#' Binomial Test
 #'
 #' A wrapper around binom.test that ensures that n!=0 and that k is at
 #' least a minimum number.
@@ -456,7 +546,16 @@ mT1<-function(fasta,motifs,verbose=FALSE,cl=NULL){
 #' @param n total
 #' @param p prob
 #' @param min minimum k cut off
-#' @return p-value
+#' @return a atomic numeric p-value
+#' @examples
+#' ## How many times are two motifs found D base pairs apart
+#' frequencyAtD<-10
+#' ## How may times are two motifs found any D appart
+#' possibleAtD<-200
+#' ## If one motif distance was computed what is the probability of it
+#' ## being D
+#' probabilityAtD<-0.03
+#' btest(frequencyAtD,possibleAtD,probabilityAtD)
 #' @export
 btest<-function(k,n,p,min=10){
     if(n<1) # n must be greater than 0
@@ -467,10 +566,10 @@ btest<-function(k,n,p,min=10){
         return(0)
 }    
 
-#' Expected Motif Probobility
+#' Expected Motif Probability
 #'
-#' Determine the expected probobility of finding two motifs at a specific
-#' distance based on the emparical pdfs of the individual motifs
+#' Determine the expected probability of finding two motifs at a specific
+#' distance based on the empirical PDFs of the individual motifs
 #' @param a numerical vector PWM of motif a
 #' @param b numerical vector PWM of motif b
 #' @param width width of fasta indicies
@@ -482,19 +581,18 @@ eMP<-function(a,b,width){
     mod/sum(mod)
 }
 
-#' ePD
+#' Expected Probability Distance
 #'
-#' Determine the pvalue from a vetor of distances and PWMs from the
-#' two motifs being compared
-#' @param t1 width 2 numerical vector of distances
-#' @param a numerical vector PWM of motif a
-#' @param b numerical vector PWM of motif b
-#' @param width width of fasta indicies
+#' Determine the pvalue from a vector of distances and PWMs from the
+#' two motifs being compared.
+#' @param t1 A width 2 numerical vector of indicies and distances
+#' @param a A numerical vector PWM of motif a
+#' @param b A numerical vector PWM of motif b
+#' @param width A numeric atomic, the width of fasta indicies, should
+#' be uniform
 #' @return list(hs,mp,p-values)
-ePD<-function(t1,a,b,width){
-    block<-function(x,min,max){
-        c(x[1:(min-1)],rep(0,max-min+1),x[(max+1):length(x)])
-    }
+.ePD<-function(t1,a,b,width){
+    ## make sure there are rows in t1
     if(any(is.na(t1))){        
         return(list(hs=NA,mp=NA,pvalue=NA))
     }
@@ -510,9 +608,9 @@ ePD<-function(t1,a,b,width){
 
 #' Combination Heights
 #'
-#' Determines the number of occurances in each member ... along x.
-#' @param x seqence of possible values represented as indicies
-#' @param ... vectors of values to be mapped
+#' Determines the number of occurrences in each member ... along x.
+#' @param x A sequence of possible values represented as indicies
+#' @param ... The vectors of values to be mapped
 #' @examples
 #' x<-seq(20)
 #' y<-runif(200,1,20)
@@ -521,6 +619,10 @@ ePD<-function(t1,a,b,width){
 #' plot(x,combHeights(x,y)[[1]])
 #' @export
 combHeights<-function(x,...){
+    if(length(as.list(...))==0){
+        warning("combHeights should be passed one additional variable")
+        return(NA)
+    }
     min<-min(x)
     max<-max(x)
     lapply(list(...),function(h){        

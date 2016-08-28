@@ -2,24 +2,24 @@
 % Please edit documentation in R/main.r
 \name{getJASPAR}
 \alias{getJASPAR}
-\title{Get Jaspar}
+\title{Get JASPAR}
 \usage{
 getJASPAR(name)
 }
 \arguments{
-\item{name}{composite motifs IUPAC characters only}
+\item{name}{A composite motif. IUPAC DNA characters only.}
 }
 \value{
-the name of the motif if it came from the jaspar database
+The name of the motif as an atomic character, if it came
+from the jaspar database, otherwise NULL.
 }
 \description{
-To be used in conjuction with the jaspar.RData found in `extdata`.
+A function to be used in conjunction with the mT1_jaspar.
 Pass `getJASPAR` a composite motif from the jaspar database
 and it will return the name of the motif.
 }
 \examples{
 # load the required Jaspar motif data
-# load(system.file("extdata","mT1_jaspar.RData",package="mT1"))
 a<-mT1_jaspar$names[1]
 getJASPAR(a)
 }

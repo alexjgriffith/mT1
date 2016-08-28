@@ -7,22 +7,22 @@
 findLocs(fasta, mloc, cloc, n1, combine = "Merged")
 }
 \arguments{
-\item{fasta}{DNAStringSet}
+\item{fasta}{A DNAStringSet}
 
-\item{mloc}{fasta indicies that have  motifs}
+\item{mloc}{fasta The indicies that have  motifs}
 
-\item{cloc}{fasta indicies that have compliment motifs}
+\item{cloc}{fasta The indicies that have compliment motifs}
 
-\item{n1}{motif name, Atomic Character of only IUPAC characters}
+\item{n1}{The motif name, an Atomic Character of only IUPAC characters}
 
 \item{combine}{If two motifs are found on the same index Merged|First}
 }
 \value{
-two columns , the first being the instance the second being the
+Two columns , the first being the instance the second being the
 distance
 }
 \description{
-Finds the location of motifs on each indici of fasta. The results can
+Finds the position of motifs on each index of fasta. The results can
 be used to build the emperical PDF of motif locations.
 }
 

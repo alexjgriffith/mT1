@@ -9,21 +9,27 @@
 mT1(fasta, motifs, verbose = FALSE, cl = NULL)
 }
 \arguments{
-\item{fasta}{DNAStringSet}
+\item{fasta}{The set of genomic locations as a DNAStringSet}
 
-\item{motifs}{list motifs being compared, IUPAC chars only}
+\item{motifs}{The list of three or more motifs being compared,
+IUPAC chars only.}
 
-\item{verbose}{flag to print motifs as completed}
+\item{verbose}{A flag to print motifs as completed.}
 
-\item{cl}{cluster from makeForkCluster}
+\item{cl}{A cluster from makeForkCluster}
 }
 \value{
-a mT1 object
+A mT1 object
 }
 \description{
 Motifs in Tandem with One Another
 
-Generates a mT1 object from DNAStringSet and a vector of motifs
+Generates a mT1 object from DNAStringSet and a vector of motifs. A mT1
+object can be used for the investigation of preferred motif positions
+and identifying composite motifs. There must be at least 3 motifs being
+compared. For the comparison of two motifs look at motifDiff. The purpose
+of a mT1 object is to identify novel preferred distances from a large
+set of motifs.
 }
 \examples{
 library(Biostrings) # needed to get fasta data from genomic co-ords
