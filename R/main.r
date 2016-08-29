@@ -5,6 +5,20 @@
 ## Author : Alexander Griffith
 ## Contact: griffitaj@gmail.com
 
+#' Is IUPAC
+#' Check if a string contains only iupac characters
+#' 
+#' @param string An atomic character
+#' @return A logical, True if all IUPAC false otherwise
+#' @examples
+#' isIUPAC("CANNTG")
+#' isIUPAC("CAXCTG")
+#' @export
+isIUPAC<-function(string){
+    spl<-strsplit(string,split="")[[1]]
+    all(unlist(lapply(spl,function(s)!is.null(unlist(IUPACDNA[s])))))
+}
+
 #' IUPAC to Base
 #'
 #' This function Transforms an IUPAC DNA sequence into a string of 
@@ -23,16 +37,12 @@
     ## break atomic Character into a Character vector where the nchar
     ## in each Character is 1
     IUPAC <- strsplit(char, "")[[1]]
+    if(is.null(IUPACDNA))
+        stop("missing IUPACDNA")
     ## List of IUPAC characters and their composition
     ## IUPAC characters let you represent possible combinations of
     ## neucleotides as a single character. For example N = [ACGT]
-    IUPACCharacters <- list("A", "C", "G", "T", c("A", "G"), 
-        c("C", "T"), c("C", "G"), c("A", "T"), c("G", "T"), c("A", 
-            "C"), c("C", "G", "T"), c("A", "G", "T"), c("A", 
-            "C", "T"), c("A", "C", "G"), c("A", "C", "G", "T"))
-    names(IUPACCharacters) <- c("A", "C", "G", "T", "R", "Y", 
-                                "S", "W", "K", "M", "B", "D",
-                                "H", "V", "N")
+    IUPACCharacters<-IUPACDNA
     ## Ensure all characters in char are IUPAC
     if (any(!IUPAC %in% names(IUPACCharacters))) {
         stop("Input string contains non IUPAC characters.")
@@ -107,7 +117,7 @@ getJASPAR<-function(name){
                         ",package=\"mT1\"))"))
         }
         ## Find appropriate jasapar final id from the name index
-        ret<-jfid[jnames==name]
+        ret<-jfid[jnames == name]
         ## Test if null, currently this step is redundant
         ifelse(is.null(ret),NULL,ret)
     })
@@ -190,7 +200,7 @@ diffMotif<-function(fasta,motifs,mloc,cloc,i=1,j=2,min=200,combine="Merged"){
     ## Locations under the same peak are combined in two ways
     ## First: Keep the smallest distance
     ## Merged: Keep all distances   
-    if(combine=="First"){
+    if(combine == "First"){
         ## Determine the distance between motifs
         mh<-cbind(loc=sharedm,pos=mapply(function(a,b){
             x<-unique(c(outer(a,b,Vectorize(function(i,j) i-j))))
@@ -208,7 +218,7 @@ diffMotif<-function(fasta,motifs,mloc,cloc,i=1,j=2,min=200,combine="Merged"){
             ret<-rbind(ret,p1)
         }
     }
-    else if(combine=="Merged"){
+    else if(combine == "Merged"){
         ## A function that takes the distances between motifs and returns
         ## a two column numerical array with the distances and their
         ## genomic index.
@@ -293,7 +303,7 @@ findLocs<-function(fasta,mloc,cloc,n1,combine="Merged"){
         eloc<-unlist(mapply(function(x,n)rep(x,n),loc,len,SIMPLIFY=FALSE))
         cbind(loc=eloc,pos=pos)
     }
-    if(combine=="First"){
+    if(combine == "First"){
         mh<-cbind(loc=mloc,sapply(l1m,function(x) x[which.min(abs(x))]))
         ch<-cbind(loc=cloc,sapply(l1c,function(x) x[which.min(abs(x))]))    
         p2<-ch[!ch[,1] %in% both,]
@@ -305,7 +315,7 @@ findLocs<-function(fasta,mloc,cloc,n1,combine="Merged"){
         }
         colnames(ret)<-c("loc","pos")
     }
-    else if(combine=="Merged"){        
+    else if(combine == "Merged"){        
         mh<-keep(l1m,mloc)
         ch<-keep(l1c,cloc)
         p2<-ch[!ch[,1] %in% both,]
@@ -389,10 +399,10 @@ plot.mT1<-function(x,motif1=NULL,motif2=NULL,i=NULL,...){
         motif2<-as.character(main[i,2])
     }
     with(x,{
-        n1<-which(motifs==motif1)[1]
-        n2<-which(motifs==motif2)[1]        
-        i<-union(which(combs[,1]==n1 & combs[,2] ==n2),
-                 which(combs[,1]==n2 & combs[,2] ==n1))[1]
+        n1<-which(motifs == motif1)[1]
+        n2<-which(motifs == motif2)[1]        
+        i<-union(which(combs[,1] == n1 & combs[,2] == n2),
+                 which(combs[,1] == n2 & combs[,2] == n1))[1]
         par(mfrow=c(3,2))
         plot(density(dens[[n1]][,2]),main=motif1)
         plot(density(dens[[n2]][,2]),main=motif2)
@@ -417,13 +427,14 @@ plot.mT1<-function(x,motif1=NULL,motif2=NULL,i=NULL,...){
 #' @param diff The difference in motif size between a and b
 #' @return A two column vector with location indexes and positions
 .motifDiffFromDens<-function(a,b,diff){
+    ## todo: clean up .motifDiffFromDens, giving better names to t2 and t3
     af<-as.data.frame(a)
     bf<-as.data.frame(b)
     colnames(af)<-c("loc","a","dir")
     colnames(bf)<-c("loc","b","dir")
-    t2<-merge(af[af$dir==1,c(1,2)],bf[bf$dir==1,c(1,2)])
+    t2<-merge(af[af$dir == 1,c(1,2)],bf[bf$dir == 1,c(1,2)])
     back<-data.frame(loc=t2[,1],pos=t2[,3]-t2[,2]+diff)
-    t3<-merge(af[af$dir==0,c(1,2)],bf[bf$dir==0,c(1,2)])
+    t3<-merge(af[af$dir == 0,c(1,2)],bf[bf$dir == 0,c(1,2)])
     forw<-data.frame(loc=t3[,1],pos=t3[,2]-t3[,3])    
     ret<-rbind(back,forw)    
     #ret<-rbind(cbind(t3[,1],forw,0),cbind(t2[,1],back,1))
@@ -553,6 +564,8 @@ c.mT1<-function(...,recursive=FALSE){
     wl<-list(...)
     if(length(wl)<2)
         return (wl[[1]])
+    ## this function can be greatly simplified by looping over
+    ## c rbind and first
     toRbind<-c("combs")
     toC<-c("diff","dens","sig","motifs","hs" ,"mp","pvalue")
     toTest<-c("fasta","width")
@@ -570,11 +583,11 @@ c.mT1<-function(...,recursive=FALSE){
             x[[n]]}))
     }
     fasta<-lapply(wl,function(x) x[["fasta"]])
-    if(!Reduce(function(a,b)a==all(b==fasta[[1]]),
+    if(!Reduce(function(a,b)a == all(b == fasta[[1]]),
                init=TRUE,x=fasta))
         stop("different genomic ranges")
     width<-unlist(lapply(wl,function(x) x[["width"]]))
-    if(any(!(width[1]==width)))
+    if(any(!(width[1] == width)))
         stop("different widths")
     first<-function(...){
         lapply(list(...),function(x) x[[1]])
@@ -743,7 +756,7 @@ eMP<-function(a,b,width){
 #' plot(x,combHeights(x,y)[[1]])
 #' @export
 combHeights<-function(x,...){
-    if(length(as.list(...))==0){
+    if(length(as.list(...)) == 0){
         warning("combHeights should be passed one additional variable")
         return(NA)
     }
