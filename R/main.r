@@ -349,10 +349,6 @@ makeTitle.mT1<-function(x,i,...){
     })
 }
 
-## remove these once R CMD check works with summary.mT1
-
-
-
 #' @method summary mT1
 #' @export
 summary.mT1<-function(object,...){
@@ -394,14 +390,13 @@ plot.mT1<-function(x,motif1=NULL,motif2=NULL,i=NULL,...){
     }
     with(x,{
         n1<-which(motifs==motif1)[1]
-        n2<-which(motifs==motif2)[1]
-        print(c(n1,n2))
+        n2<-which(motifs==motif2)[1]        
         i<-union(which(combs[,1]==n1 & combs[,2] ==n2),
                  which(combs[,1]==n2 & combs[,2] ==n1))[1]
         par(mfrow=c(3,2))
         plot(density(dens[[n1]][,2]),main=motif1)
         plot(density(dens[[n2]][,2]),main=motif2)
-        plot(mp[[i]],type="l",ylab="p",main="Convolution")
+        plot(mp[[i]],type="l",ylab="p",main="Convolution")        
         plot(hs[[i]],type="l",ylab="Frequency",
              main=paste0(motifs[combs[i,1]],"-",motifs[combs[i,2]]))
         plot(combHeights(seq(0,max(hs[[i]])),
@@ -466,7 +461,7 @@ plot.mT1<-function(x,motif1=NULL,motif2=NULL,i=NULL,...){
 #' fasta<-getSeq(genome,peaks$chr,start=peaks$start,end=peaks$end)
 #' 
 #' ## Motifs to compare
-#' motifs<-c("CANNTG","GATAA",jaspar$jsublM[1:8])
+#' motifs<-c("CANNTG","GATAA",jaspar$jsublM[1:2])
 #' 
 #' ## Find the preferred distances between `motifs` under the peaks
 #' my_sampleMT1<-mT1(fasta,motifs)
@@ -479,8 +474,14 @@ plot.mT1<-function(x,motif1=NULL,motif2=NULL,i=NULL,...){
 #' plot(my_sampleMT1,i=1)
 #' @export
 mT1<-function(fasta,motifs,verbose=FALSE,cl=NULL){
+    ## Make sure motifs are unique
+    tmots<-unique(motifs)
+    if(length(tmots)!=length(motifs)){
+        warning("motifs must be unique")
+        motifs<-tmots
+    }
     ## Ensure that there are 3 motifs at least. For the comparison of
-    ## two motifs refer to motifDiff
+    ## two motifs refer to motifDiff    
     if(length(motifs)<3){
         warning("must provide mT1 with more than 2 motifs")
         return (NA)
@@ -515,7 +516,15 @@ mT1<-function(fasta,motifs,verbose=FALSE,cl=NULL){
         m1<-a[[x[1]]]
         m2<-a[[x[2]]]
         diff<-nchar(motifs[x[2]])-nchar(motifs[x[1]])
-        .motifDiffFromDens(m1,m2,diff)        
+        if(length(intersect(m1[,1],m2[,1]))>300){
+            y<-.motifDiffFromDens(m1,m2,diff)        
+            change<- y[,2]>= (- nchar(motifs[x[2]])) &
+                y[,2]<= nchar(motifs[x[1]])
+            y<-y[(!change), ]
+        }
+        else
+            y<-NA
+        y
     })
     ## Which indicies have values
     large<-sapply(t1,function(x) all(unlist(is.na(x))))
@@ -529,13 +538,121 @@ mT1<-function(fasta,motifs,verbose=FALSE,cl=NULL){
                 function(x) .ePD(t1[[x[3]]],a[[x[1]]][,2],a[[x[2]]][,2],
                                 width))
     ## Build and return the mT1 object
-    mT1<-append(mT1,list(width=width,hs=lapply(prob,function(x) x[["hs"]]),
+    mT1<-append(mT1,
+                list(fasta=fasta,width=width,hs=lapply(prob,function(x) x[["hs"]]),
                 mp=lapply(prob,function(x) x[["mp"]]),
                 pvalue=lapply(prob,function(x) x[["pvalue"]])))
     ## Set class type mT1
     attr(mT1,"class")<-"mT1"
     mT1
+}
 
+#' @method c mT1
+#' @export
+c.mT1<-function(...,recursive=FALSE){
+    wl<-list(...)
+    if(length(wl)<2)
+        return (wl[[1]])
+    toRbind<-c("combs")
+    toC<-c("diff","dens","sig","motifs","hs" ,"mp","pvalue")
+    toTest<-c("fasta","width")
+    res<-list()
+    for(n in toC){        
+        res[[n]]<-do.call(c,lapply(wl,function(x){
+            if(is.null(x[[n]]))
+                stop(paste0(n," not found in mT1"))
+            x[[n]]}))
+    }
+    for(n in toRbind){
+        res[[n]]<-do.call(rbind,lapply(wl,function(x){
+            if(is.null(x[[n]]))
+                stop(paste0(n," not found in mT1"))
+            x[[n]]}))
+    }
+    fasta<-lapply(wl,function(x) x[["fasta"]])
+    if(!Reduce(function(a,b)a==all(b==fasta[[1]]),
+               init=TRUE,x=fasta))
+        stop("different genomic ranges")
+    width<-unlist(lapply(wl,function(x) x[["width"]]))
+    if(any(!(width[1]==width)))
+        stop("different widths")
+    first<-function(...){
+        lapply(list(...),function(x) x[[1]])
+    }
+    for(n in toTest){
+        res[[n]]<-do.call(first,lapply(wl,function(x){
+            if(is.null(x[[n]]))
+                stop(paste0(n," not found in mT1"))
+            x[[n]]}))
+    }    
+    attr(res,"class")<-"mT1"
+    return( res)
+}
+
+#' Add Motif
+#'
+#' Takes a motif and creates a new object based on the class of object
+#'
+#' @param object A object with an addMotif method
+#' @param motif A Atomic Character containing IUPAC characters
+#' @param ... Variables to pass to object.
+#' @rdname addMotif
+#' @examples
+#' new<-addMotif(mT1_sampleMT1,"CACCTG")
+#' sample<-c(mT1_sampleMT1,new)
+#' sample
+#' @export
+addMotif<-function(object,motif,...){
+    UseMethod("addMotif",object)
+}
+
+#' @rdname addMotif
+#' @method addMotif default
+#' @export
+addMotif.default<-function(object,motif,...){
+    motif
+}
+
+#' @rdname addMotif
+#' @method addMotif mT1
+#' @export
+addMotif.mT1<-function(object,motif,...){
+    ## Much of this function is shared with mT1
+    ## I need to extract the similarities and move them
+    ## to a set of private mT1 helper functions
+    return ( with(object,{
+        mloc<-grep(.IUPACtoBase(motif), fasta)
+        cloc<- grep(.complement(.IUPACtoBase(motif)),fasta)        
+        a<-findLocs(fasta,mloc,cloc,motif,"FALSE")
+        nm1<-length(motifs)
+        tofind<-cbind(nm1+1,seq(nm1))
+        t1<-apply(tofind,1,function(x){
+                m1<-a
+                m2<-dens[[x[2]]]
+                diff<-nchar(motifs[x[2]])-nchar(motif)
+                if(length(intersect(m1[,1],m2[,1]))>300){
+                    y<-.motifDiffFromDens(m1,m2,diff)        
+                    change<- y[,2]>= (- nchar(motifs[x[2]])) &
+                        y[,2]<= nchar(motif)
+                    y<-y[(!change), ]
+                }
+                else
+                    y<-NA
+                y
+        })
+        prob<-apply(cbind(tofind,seq(dim(tofind)[1])),1,
+                    function(x) .ePD(t1[[x[3]]],a[,2],dens[[x[2]]][,2],
+                                     width))
+        large = sapply(t1,function(x) all(unlist(is.na(x))))
+        ret<-list(diff=t1,dens=list(a),sig=large,motifs=motif,combs=tofind,
+             width=width,
+             fasta=fasta,
+             hs=lapply(prob,function(x) x[["hs"]]),
+             mp=lapply(prob,function(x) x[["mp"]]),
+             pvalue=lapply(prob,function(x) x[["pvalue"]]))
+        class(ret)<-"mT1"
+        ret
+    }))
 }
 
 #' Binomial Test
@@ -545,7 +662,8 @@ mT1<-function(fasta,motifs,verbose=FALSE,cl=NULL){
 #' @param k count
 #' @param n total
 #' @param p prob
-#' @param min minimum k cut off
+#' @param kmin minimum k cut off
+#' @param nmin minimum n cut off
 #' @return a atomic numeric p-value
 #' @examples
 #' ## How many times are two motifs found D base pairs apart
@@ -557,11 +675,13 @@ mT1<-function(fasta,motifs,verbose=FALSE,cl=NULL){
 #' probabilityAtD<-0.03
 #' btest(frequencyAtD,possibleAtD,probabilityAtD)
 #' @export
-btest<-function(k,n,p,min=10){
-    if(n<1) # n must be greater than 0
+btest<-function(k,n,p,kmin=10,nmin=600){
+    if(n<nmin) # n must be greater than 0
         return(0)
-    else if(k>min) # ensure that there are more k than min
-        return(log(binom.test(k,n,p)$p.value,10))
+    ## binom.test needs to be speed up, half of the time is spent here
+    else if(k>kmin) # ensure that there are more k than min
+        ##return(log(binom.test(k,n,p)$p.value,10))
+        return (log(dbinom(k,n,p),10))
     else
         return(0)
 }    
@@ -602,7 +722,11 @@ eMP<-function(a,b,width){
         stop("n >hs")
     }
     mp<-eMP(a,b,width)
-    pvalue<-mapply(function(a,b)btest(a,n,b),hs,mp)
+    ##pvalue<-rep(0,length(hs))
+    ##pvalue[hs>10]<-log(dbinom(hs[hs>10],n,mp[hs>10]),10)
+    pvalue<-log(dbinom(hs,n,mp),10)
+    pvalue[hs<1]<-0
+    ##pvalue<-mapply(function(a,b)btest(a,n,b),hs,mp)
     list(hs=hs,mp=mp,pvalue=pvalue)
 }
 

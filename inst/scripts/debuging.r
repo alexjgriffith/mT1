@@ -31,17 +31,18 @@ sample<-mT1(mT1_fasta,c("CANNTG","GATAA",mT1_jaspar$jsublM[1:10]))
 
 library(mT1)
 
-#sample<-mT1_sampleMT1
+                                        #sample<-mT1_sampleMT1
+
 sample3<-mT1(mT1_fasta,c("CANNTG","GATAA",mT1_jaspar$jsublM[1:2]))
 
-a<-sample2$dens[[1]]
-b<-sample2$dens[[2]]
+a<-sample3$dens[[1]]
+b<-sample3$dens[[2]]
 
 
 ##a[,1] b[,1]
 
 
-motifDiff<-function(a,b,diff){
+.motifDiffFromDens<-function(a,b,diff){
     af<-as.data.frame(a)
     bf<-as.data.frame(b)
     colnames(af)<-c("loc","a","dir")
@@ -60,14 +61,36 @@ motifDiff<-function(a,b,diff){
 plot(combHeights(seq(-30,30),motifDiff(a,b,-1)[,2])[[1]])
 
 
+library(mT1)
+
+obj<-mT1(mT1_fasta,c("CANNTG","GATAA","HGATAA"))
+
+plot(obj,i=2)
+
+
+clean<-function(x,n1,n2){
+        change<- x>= (- nchar(n2)) & x<= nchar(n1)        
+        x[(!change) ]
+    }
+
+
+x<-seq(-15,15)
+y<-combHeights(x,clean(.motifDiffFromDens(a,b,-1)[,2],"CANNTG","GATAA"))[[1]]
+plot(x,y)
 
 
 
 
+Rprof("~/Desktop/rprof.out")
+sample3<-mT1(mT1_fasta,c("CANNTG","GATAA",mT1_jaspar$jsublM[1:2]))
+summaryRprof("~/Desktop/rprof.out")
 
+log(binom.test(250,12000,0.003)$p.value,2.7)
 
+log(dbinom(250,12000,0.003),10)
 
+sample3<-mT1(mT1_fasta,unique(c("CANNTG","GATAA",mT1_jaspar$jsublM[1:2])))
 
+new<-addMotif(sample3,"CANNTG")
 
-
-
+c(sample3,new)

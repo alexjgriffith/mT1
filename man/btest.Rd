@@ -4,7 +4,7 @@
 \alias{btest}
 \title{Binomial Test}
 \usage{
-btest(k, n, p, min = 10)
+btest(k, n, p, kmin = 10, nmin = 600)
 }
 \arguments{
 \item{k}{count}
@@ -13,7 +13,9 @@ btest(k, n, p, min = 10)
 
 \item{p}{prob}
 
-\item{min}{minimum k cut off}
+\item{kmin}{minimum k cut off}
+
+\item{nmin}{minimum n cut off}
 }
 \value{
 a atomic numeric p-value

@@ -45,7 +45,7 @@ genome<-BSgenome.Hsapiens.UCSC.hg19
 fasta<-getSeq(genome,peaks$chr,start=peaks$start,end=peaks$end)
 
 ## Motifs to compare
-motifs<-c("CANNTG","GATAA",jaspar$jsublM[1:8])
+motifs<-c("CANNTG","GATAA",jaspar$jsublM[1:2])
 
 ## Find the preferred distances between `motifs` under the peaks
 my_sampleMT1<-mT1(fasta,motifs)
