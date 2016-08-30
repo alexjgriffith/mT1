@@ -6,8 +6,8 @@
 ## Contact: griffitaj@gmail.com
 
 #' Is IUPAC
-#' Check if a string contains only iupac characters
 #' 
+#' Check if a string contains only iupac characters
 #' @param string An atomic character
 #' @return A logical, True if all IUPAC false otherwise
 #' @examples
@@ -485,6 +485,36 @@ plot.mT1<-function(x,motif1=NULL,motif2=NULL,i=NULL,...){
 #' plot(my_sampleMT1,i=1)
 #' @export
 mT1<-function(fasta,motifs,verbose=FALSE,cl=NULL){
+    makePind<-function(l,n,name=NULL){
+        if(!is.null(name))
+            cat(name)
+        if(l<n){
+            pind<-seq(l)
+            per <- 1/(l-2)*100
+            pb <- txtProgressBar(style=3,width=60,title=name)
+        }
+        else{
+            pind<-c(ceiling(seq(1,l-ceiling(l/(n+1)),by=l/(n+1))),l)
+            per<-1/n*100
+            pb <- txtProgressBar(style=3,width=60,label=name)
+        }
+        return(list(pind=pind,per=per,pb=pb,go=TRUE,name=name))
+    }
+    checkPind<-function(complete,pind){
+        if(pind$go){
+            perc<-(which(complete ==pind$pind)-1)*pind$per
+            if(length(perc)==1){                    
+                setTxtProgressBar(pind$pb, perc/100,label=pind$name)
+                if(which(complete==pind$pind)==length(pind$pind) |
+                   perc/100==1){
+                    close(pind$pb)
+                    pind$go<-FALSE
+                }
+
+            }
+        }
+        pind
+    }
     ## Make sure motifs are unique
     tmots<-unique(motifs)
     if(length(tmots)!=length(motifs)){
@@ -498,32 +528,46 @@ mT1<-function(fasta,motifs,verbose=FALSE,cl=NULL){
         return (NA)
     }
     ## find which fasta indicies have the motifs of interest
-    mloc<-lapply(motifs,function(x) grep(.IUPACtoBase(x), fasta))
-    cloc<-lapply(motifs,function(x) grep(.complement(.IUPACtoBase(x)),fasta))
+    if(verbose){
+        pind<-makePind(length(motifs),20,"Finding motif co-ords ...\n")
+    }
+    mloc<-lapply(motifs,function(x){
+        if(verbose){
+            pind<-checkPind(which(motifs==x),pind)
+        }
+        grep(.IUPACtoBase(x), fasta)})
+    if(verbose){
+        pind<-makePind(length(motifs),20,"Finding complement co-ords ...\n")
+    }
+    cloc<-lapply(motifs,function(x){
+        if(verbose){
+            pind<-checkPind(which(motifs==x),pind)
+        }
+        grep(.complement(.IUPACtoBase(x)),fasta)})
     names(mloc)<-motifs
     names(cloc)<-motifs
     ## Determine the individual PDFs for each motif
-    a<-lapply(motifs,function(x)
-        findLocs(fasta,mloc[[x]],cloc[[x]],x,"FALSE"))
+    if(verbose){
+        pind<-makePind(length(motifs),20,"Finding motif locations ...\n")
+    }
+    a<-lapply(motifs,function(x){
+        if(verbose){
+            pind<-checkPind(which(motifs==x),pind)
+        }
+        findLocs(fasta,mloc[[x]],cloc[[x]],x,"FALSE")})
     ## combination of all motifs
     tofind<-t(combn(seq(length(motifs)),2))
-    ## check to see if diffMotif should be preformed in parallell
-    ## if(is.null(cl)){
-    ##     t1<-apply(tofind,1,function(x){
-    ##         if(verbose)
-    ##             print(unlist(lapply(x,function(x) motifs[x])) )
-    ##         diffMotif(fasta,motifs,mloc,cloc,x[1],x[2])
-    ##     })
-    ## }
-    ## else{
-    ##     t1<-parApply(cl,tofind,1,function(x){
-    ##         if(verbose)
-    ##             print(unlist(lapply(x,function(x) motifs[x])) )
-    ##         diffMotif(fasta,motifs,mloc,cloc,x[1],x[2])
-    ##     })
-    ## }
-    ## Which motif combs had co-occuances
-    t1<-apply(tofind,1,function(x){
+
+    if(verbose){
+        pind<-makePind(dim(tofind)[1],20,
+                       paste0("Difference Analysis Begining.",
+                              " Searching through ",dim(tofind)[1],
+                              " combinations\n"))        
+    }
+    t1<-apply(tofind,1,function(x){        
+        if(verbose){
+            checkPind(which(tofind[,1]==x[1] &  tofind[,2]==x[2]),pind)
+        }
         m1<-a[[x[1]]]
         m2<-a[[x[2]]]
         diff<-nchar(motifs[x[2]])-nchar(motifs[x[1]])
@@ -544,10 +588,18 @@ mT1<-function(fasta,motifs,verbose=FALSE,cl=NULL){
     ## If biostrings is loaded nchar(fasta) will be equivalent
     ## Check this after any update to IRanges
     width<-fasta@ranges@width[1]
-    ## Determine probabilities 
+    ## Determine probabilities
+    if(verbose){
+        pind<-makePind(dim(tofind)[1],20, "Finding P-Values ...\n")
+    }
     prob<-apply(cbind(tofind,seq(dim(tofind)[1])),1,
-                function(x) .ePD(t1[[x[3]]],a[[x[1]]][,2],a[[x[2]]][,2],
-                                width))
+                function(x){
+                    if(verbose)
+                        checkPind(x[3],pind)                    
+                    .ePD(t1[[x[3]]],a[[x[1]]][,2],a[[x[2]]][,2],
+                                 width)})
+    if(verbose)
+        cat("Finalizing mT1 object ...\n")
     ## Build and return the mT1 object
     mT1<-append(mT1,
                 list(fasta=fasta,width=width,hs=lapply(prob,function(x) x[["hs"]]),
@@ -697,7 +749,7 @@ btest<-function(k,n,p,kmin=10,nmin=600){
         return (log(dbinom(k,n,p),10))
     else
         return(0)
-}    
+}
 
 #' Expected Motif Probability
 #'

@@ -94,3 +94,18 @@ sample3<-mT1(mT1_fasta,unique(c("CANNTG","GATAA",mT1_jaspar$jsublM[1:2])))
 new<-addMotif(sample3,"CANNTG")
 
 c(sample3,new)
+
+
+largeAnalysis<-mT1(mT1_fasta,unique(c("CANNTG","GATAA",
+                                      mT1_jaspar$jsublM[1:40])),verbose=TRUE)
+
+
+testit <- function(x = sort(runif(20)), ...)
+{
+    pb <- txtProgressBar(...)
+    for(i in c(0, x, 1)) {Sys.sleep(0.5); setTxtProgressBar(pb, i)}
+    Sys.sleep(1)
+    close(pb)
+}
+
+testit(style = 3,width=60)
