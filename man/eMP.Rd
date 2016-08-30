@@ -2,7 +2,7 @@
 % Please edit documentation in R/main.r
 \name{eMP}
 \alias{eMP}
-\title{Expected Motif Probobility}
+\title{Expected Motif Probability}
 \usage{
 eMP(a, b, width)
 }
@@ -17,7 +17,7 @@ eMP(a, b, width)
 expectation for each motif distance
 }
 \description{
-Determine the expected probobility of finding two motifs at a specific
-distance based on the emparical pdfs of the individual motifs
+Determine the expected probability of finding two motifs at a specific
+distance based on the empirical PDFs of the individual motifs
 }
 

@@ -7,12 +7,12 @@
 combHeights(x, ...)
 }
 \arguments{
-\item{x}{seqence of possible values represented as indicies}
+\item{x}{A sequence of possible values represented as indicies}
 
-\item{...}{vectors of values to be mapped}
+\item{...}{The vectors of values to be mapped}
 }
 \description{
-Determines the number of occurances in each member ... along x.
+Determines the number of occurrences in each member ... along x.
 }
 \examples{
 x<-seq(20)

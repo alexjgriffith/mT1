@@ -7,24 +7,25 @@
 motifPDF(fasta, motif)
 }
 \arguments{
-\item{fasta}{DNAStringSet from Biostrings}
+\item{fasta}{A DNAStringSet from Biostrings.}
 
-\item{motif}{single string, containing only DNA IUPAC characters}
+\item{motif}{An atomic Character containing only DNA IUPAC characters}
 }
 \value{
-two columns , the first being the instance the second being the
-distance
+A numeric vector with two columns , the first being the index
+the second being the distance
 }
 \description{
-Generate a list of locations for a single motif.
+Generate a distribution of locations for a single motif within a set
+of genomic regions.
 }
 \examples{
 ## load fasta file
-## load(system.file("extdata","fasta.RData",package="mT1"))
 fasta<-mT1_fasta
 pdf<-motifPDF(fasta,"CANNTG")
 x<-seq(1:100)
 y<-combHeights(x,pdf[,2])[[1]]
+## plot the results
 plot(x,y,main="CANNTG",ylab="Frequency",xlab="Index")
 }
 

@@ -8,28 +8,30 @@ diffMotif(fasta, motifs, mloc, cloc, i = 1, j = 2, min = 200,
   combine = "Merged")
 }
 \arguments{
-\item{fasta}{DNAStringSet}
+\item{fasta}{A DNAStringSet}
 
-\item{motifs}{list of motif Character Atomics}
+\item{motifs}{The list of motif Character Atomics}
 
-\item{mloc}{list of locations of each motif in fasta}
+\item{mloc}{A list of indicies  of each motif in fasta}
 
-\item{cloc}{list of locations of each compositemotif in fasta}
+\item{cloc}{A list of indicies of each composite motif in fasta}
 
-\item{i}{index 1}
+\item{i}{Motif index 1}
 
-\item{j}{index 2}
+\item{j}{Motif index index 2}
 
 \item{min}{numerical atomic, minimum length of mloc[[i or j]]}
 
-\item{combine}{Merged|First}
+\item{combine}{What to do if two motifs occur in the same region
+Merged|First}
 }
 \value{
-two columns , the first being the index the second being the
-distance
+A numeric vector with two columns , the first being the
+genomic index the second being the distance.
 }
 \description{
 Find the distances between two motifs within a subset of the genome
-represented by fasta.
+represented by fasta. If the distribution of motifs are already known
+look into mT1:::.motifDiffFromDens.
 }
 

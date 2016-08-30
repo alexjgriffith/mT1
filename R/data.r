@@ -5,6 +5,14 @@
 ## Author : Alexander Griffith
 ## Contact: griffitaj@gmail.com
 
+#' IUPACDNA
+#' 
+#' A list with IUPAC names "A C G T R Y S W K M B D H V N" and
+#' base pair values. eg IUPACDNA["A"] -> "A" &
+#' IUPACDNA["N"]->c("A","C","T","G")
+#' @format List with 15 members one for each IUPAC charcter :
+"IUPACDNA"
+
 
 #' Fasta
 #' 

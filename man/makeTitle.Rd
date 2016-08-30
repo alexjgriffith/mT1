@@ -10,16 +10,17 @@ makeTitle(x, ...)
 \method{makeTitle}{mT1}(x, i, ...)
 }
 \arguments{
-\item{x}{obj to make title from}
+\item{x}{The obj to make title from}
 
 \item{...}{possible properties}
 
-\item{i}{print index}
+\item{i}{The index of interest from print(x)}
 }
 \value{
-Atomic Character with motif info
+An Atomic Character with motif info
 }
 \description{
-Generates a title to be used for plotting object x
+A generic function that  Generates a title to be used for plotting
+an object.
 }
 

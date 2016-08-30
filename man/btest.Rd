@@ -2,9 +2,9 @@
 % Please edit documentation in R/main.r
 \name{btest}
 \alias{btest}
-\title{binomial test}
+\title{Binomial Test}
 \usage{
-btest(k, n, p, min = 10)
+btest(k, n, p, kmin = 10, nmin = 600)
 }
 \arguments{
 \item{k}{count}
@@ -13,13 +13,25 @@ btest(k, n, p, min = 10)
 
 \item{p}{prob}
 
-\item{min}{minimum k cut off}
+\item{kmin}{minimum k cut off}
+
+\item{nmin}{minimum n cut off}
 }
 \value{
-p-value
+a atomic numeric p-value
 }
 \description{
 A wrapper around binom.test that ensures that n!=0 and that k is at
 least a minimum number.
+}
+\examples{
+## How many times are two motifs found D base pairs apart
+frequencyAtD<-10
+## How may times are two motifs found any D appart
+possibleAtD<-200
+## If one motif distance was computed what is the probability of it
+## being D
+probabilityAtD<-0.03
+btest(frequencyAtD,possibleAtD,probabilityAtD)
 }
 

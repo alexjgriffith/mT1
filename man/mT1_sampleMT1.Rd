@@ -9,8 +9,11 @@
 mT1_sampleMT1
 }
 \description{
-A sample mT1 object for use in examples. It was derived using
-mT1_fasta and the motifs c("CANNTG","GATAA",mT1_jaspar$jsublM[1:10])
+A sample mT1 object for use in examples.
+}
+\details{
+It was derived using mT1_fasta and the motifs
+c("CANNTG","GATAA",mT1_jaspar$jsublM[1:10])
 }
 \keyword{datasets}
 
