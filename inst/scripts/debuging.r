@@ -96,8 +96,28 @@ new<-addMotif(sample3,"CANNTG")
 c(sample3,new)
 
 
+library(CCCA)
+library('BSgenome.Hsapiens.UCSC.hg19')
+source("~/r-workspace/project/ccca.r")
+source("~/r-workspace/project/project.r")
+source("~/r-workspace/project/project-variables.r")
+
+env<-getPRC20(2)
+
+env<-addFasta(env,width=150)
+
+largeAnalysis<-mT1(env$fasta,unique(c("CANNTG","GATAA",
+                                      mT1_jaspar$jsublM[1:2])),verbose=TRUE)
+
+
 largeAnalysis<-mT1(mT1_fasta,unique(c("CANNTG","GATAA",
-                                      mT1_jaspar$jsublM[1:40])),verbose=TRUE)
+                                      mT1_jaspar$jsublM[1:10])),verbose=TRUE)
+
+
+
+par(mfrow=c(1,2))
+plot(combHeights(seq(1,150),abs(largeAnalysis$dens[[1]][,2]-151))[[1]])
+plot(combHeights(seq(1,150),largeAnalysis$dens[[1]][,2])[[1]])
 
 
 testit <- function(x = sort(runif(20)), ...)
@@ -109,3 +129,34 @@ testit <- function(x = sort(runif(20)), ...)
 }
 
 testit(style = 3,width=60)
+
+
+refl<-function(v,width,center=width/2){
+    ##abs(v-width-1)
+    x<-seq(width)
+    <-cbind(v,width)
+}
+
+
+ebox<-combHeights(seq(1,150),c(floor(rnorm(10000,75,30)),floor(runif(10000,1,152))),c(floor(runif(10000,1,152))))
+
+
+a<-ebox[[1]]/sum(ebox[[1]])
+b<-ebox[[2]]/sum(ebox[[2]])
+c<-rev(a)
+d<-convolve(b,c,type="open")
+
+par(mfrow=c(2,2))
+plot(a,type="l")
+plot(b,type="l")
+plot(rev(a),type="l")
+plot(d,type="l")
+
+
+log.env$btest<-list()
+
+lapply(log.env$btest,function(x) dbinom(x[,1],x[,2],x[,3]))
+
+
+
+do.call(convolve,append(combHeights(seq(1,150),largeAnalysis$dens[[1]][,2], abs(largeAnalysis$dens[[2]][,2]-151)),list(type="open")))
