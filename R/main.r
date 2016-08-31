@@ -766,7 +766,6 @@ eMP<-function(a,b,width,nb){
     refl<-function(x,width,sizex){        
         abs(x-width+sizex-2)
     }
-    print(range(refl(b,width,nb)))
     y<-combHeights(seq(1,width),a,refl(b,width,nb))
     mod<-convolve(y[[1]],y[[2]],type="open")
     mod[mod<0]<-0
