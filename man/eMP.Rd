@@ -4,12 +4,12 @@
 \alias{eMP}
 \title{Expected Motif Probability}
 \usage{
-eMP(a, b, width)
+eMP(a, b, width, nb)
 }
 \arguments{
-\item{a}{numerical vector PWM of motif a}
+\item{a}{numerical vector PDF of motif a}
 
-\item{b}{numerical vector PWM of motif b}
+\item{b}{numerical vector PDF of motif b}
 
 \item{width}{width of fasta indicies}
 }

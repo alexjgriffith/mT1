@@ -398,22 +398,23 @@ plot.mT1<-function(x,motif1=NULL,motif2=NULL,i=NULL,...){
         motif1<-as.character(main[i,1])
         motif2<-as.character(main[i,2])
     }
-    with(x,{
+    with(x,{        
+        xa<-seq(-width+1,width-1)
         n1<-which(motifs == motif1)[1]
-        n2<-which(motifs == motif2)[1]        
+        n2<-which(motifs == motif2)[1]
         i<-union(which(combs[,1] == n1 & combs[,2] == n2),
                  which(combs[,1] == n2 & combs[,2] == n1))[1]
         par(mfrow=c(3,2))
-        plot(density(dens[[n1]][,2]),main=motif1)
-        plot(density(dens[[n2]][,2]),main=motif2)
-        plot(mp[[i]],type="l",ylab="p",main="Convolution")        
-        plot(hs[[i]],type="l",ylab="Frequency",
-             main=paste0(motifs[combs[i,1]],"-",motifs[combs[i,2]]))
+        plot(density(dens[[n1]][,2]-width/2),main=motif1)
+        plot(density(dens[[n2]][,2]-width/2),main=motif2)
+        plot(xa,mp[[i]],type="l",ylab="p",xlab="Index",main="Convolution")
+        plot(xa,hs[[i]],type="l",xlab="Index",ylab="Frequency",
+             main=paste0(motifs[combs[i,1]],"-",motifs[combs[i,2]]),...)
         plot(combHeights(seq(0,max(hs[[i]])),
                          hs[[i]])[[1]],type="l",xlab="Height",
              ylab="Frequency",main="Freq")
-        plot(pvalue[[i]],type="l",ylab="p-value",xlab="Index",
-             main="Tests")
+        plot(xa,pvalue[[i]],type="l",ylab="p-value",xlab="Index",
+             main="Tests",...)
     })
 }
 
@@ -597,7 +598,7 @@ mT1<-function(fasta,motifs,verbose=FALSE,cl=NULL){
                     if(verbose)
                         checkPind(x[3],pind)                    
                     .ePD(t1[[x[3]]],a[[x[1]]][,2],a[[x[2]]][,2],
-                                 width)})
+                                 width,motifs[[x[1]]],motifs[[x[2]]])})
     if(verbose)
         cat("Finalizing mT1 object ...\n")
     ## Build and return the mT1 object
@@ -707,7 +708,7 @@ addMotif.mT1<-function(object,motif,...){
         })
         prob<-apply(cbind(tofind,seq(dim(tofind)[1])),1,
                     function(x) .ePD(t1[[x[3]]],a[,2],dens[[x[2]]][,2],
-                                     width))
+                                     width,,motifs[[x[1]]],motifs[[x[2]]]))
         large = sapply(t1,function(x) all(unlist(is.na(x))))
         ret<-list(diff=t1,dens=list(a),sig=large,motifs=motif,combs=tofind,
              width=width,
@@ -744,9 +745,9 @@ btest<-function(k,n,p,kmin=10,nmin=600){
     if(n<nmin) # n must be greater than 0
         return(0)
     ## binom.test needs to be speed up, half of the time is spent here
-    else if(k>kmin) # ensure that there are more k than min
+    else if(k>kmin){ # ensure that there are more k than min
         ##return(log(binom.test(k,n,p)$p.value,10))
-        return (log(dbinom(k,n,p),10))
+        return (log(dbinom(k,n,p),10))}
     else
         return(0)
 }
@@ -755,28 +756,32 @@ btest<-function(k,n,p,kmin=10,nmin=600){
 #'
 #' Determine the expected probability of finding two motifs at a specific
 #' distance based on the empirical PDFs of the individual motifs
-#' @param a numerical vector PWM of motif a
-#' @param b numerical vector PWM of motif b
+#' @param a numerical vector PDF of motif a
+#' @param b numerical vector PDF of motif b
 #' @param width width of fasta indicies
 #' @return expectation for each motif distance 
 #' @export
-eMP<-function(a,b,width){
-    y<-combHeights(seq(1,width),a,b)
-    mod<-as.integer(do.call(convolve,append(y,list(type="open"))))
+eMP<-function(a,b,width,nb){
+    refl<-function(x,width,sizex){        
+        abs(x-width+sizex)
+    }
+    y<-combHeights(seq(1,width),a,refl(b,width,nb))
+    mod<-convolve(y[[1]],y[[2]],type="open")
+    mod[mod<0]<-0
     mod/sum(mod)
 }
 
 #' Expected Probability Distance
 #'
-#' Determine the pvalue from a vector of distances and PWMs from the
+#' Determine the pvalue from a vector of distances and PDFs from the
 #' two motifs being compared.
 #' @param t1 A width 2 numerical vector of indicies and distances
-#' @param a A numerical vector PWM of motif a
-#' @param b A numerical vector PWM of motif b
+#' @param a A numerical vector PDF of motif a
+#' @param b A numerical vector PDF of motif b
 #' @param width A numeric atomic, the width of fasta indicies, should
 #' be uniform
 #' @return list(hs,mp,p-values)
-.ePD<-function(t1,a,b,width){
+.ePD<-function(t1,a,b,width,ma,mb){
     ## make sure there are rows in t1
     if(any(is.na(t1))){        
         return(list(hs=NA,mp=NA,pvalue=NA))
@@ -786,12 +791,20 @@ eMP<-function(a,b,width){
     if(max(hs)>n){
         stop("n >hs")
     }
-    mp<-eMP(a,b,width)
+    mp<-eMP(a,b,width,nchar(mb))
     ##pvalue<-rep(0,length(hs))
     ##pvalue[hs>10]<-log(dbinom(hs[hs>10],n,mp[hs>10]),10)
-    pvalue<-log(dbinom(hs,n,mp),10)
-    pvalue[hs<1]<-0
+    ##if(n>1000){
+    ##    print(n)
+    ##    pvalue<-dpois(hs,n*mp,log=TRUE)
+    ##    }
+    ##else
+    ##    pvalue<-dbinom(hs,n,mp,log=TRUE)
+    ##pvalue[hs<1]<-0
     ##pvalue<-mapply(function(a,b)btest(a,n,b),hs,mp)
+    log.env$btest<<-c(log.env$btest,list(cbind(k=hs,n=n,p=mp)))
+    pvalue<-dbinom(hs,n,mp,log=TRUE)
+    pvalue[hs<1]<-0
     list(hs=hs,mp=mp,pvalue=pvalue)
 }
 

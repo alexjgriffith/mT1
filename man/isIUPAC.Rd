@@ -2,8 +2,7 @@
 % Please edit documentation in R/main.r
 \name{isIUPAC}
 \alias{isIUPAC}
-\title{Is IUPAC
-Check if a string contains only iupac characters}
+\title{Is IUPAC}
 \usage{
 isIUPAC(string)
 }
@@ -14,7 +13,6 @@ isIUPAC(string)
 A logical, True if all IUPAC false otherwise
 }
 \description{
-Is IUPAC
 Check if a string contains only iupac characters
 }
 \examples{
