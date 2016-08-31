@@ -795,14 +795,12 @@ eMP<-function(a,b,width,nb){
     ##pvalue<-rep(0,length(hs))
     ##pvalue[hs>10]<-log(dbinom(hs[hs>10],n,mp[hs>10]),10)
     ##if(n>1000){
-    ##    print(n)
-    ##    pvalue<-dpois(hs,n*mp,log=TRUE)
-    ##    }
+    ##   pvalue<-dpois(hs,n*mp,log=TRUE)
+    ##}
     ##else
     ##    pvalue<-dbinom(hs,n,mp,log=TRUE)
     ##pvalue[hs<1]<-0
-    ##pvalue<-mapply(function(a,b)btest(a,n,b),hs,mp)
-    log.env$btest<<-c(log.env$btest,list(cbind(k=hs,n=n,p=mp)))
+    ##pvalue<-mapply(function(a,b)btest(a,n,b),hs,mp)    
     pvalue<-dbinom(hs,n,mp,log=TRUE)
     pvalue[hs<1]<-0
     list(hs=hs,mp=mp,pvalue=pvalue)
