@@ -364,12 +364,13 @@ makeTitle.mT1<-function(x,i,...){
 summary.mT1<-function(object,...){
     main<-data.frame(t(apply(object$combs[!object$sig,],1,
                              function(i) object$motifs[i])))
+    xa<-seq(-object$width+1,object$width-1)
     if(length(main)>0){
         colnames(main)<-c("motif1","motif2")
         mpv<-sapply(which(!object$sig),function(i)
             min(object$pvalue[[i]]))
         mpvl<-sapply(which(!object$sig),function(i)
-            which.min(object$pvalue[[i]])-300)
+            xa[which.min(object$pvalue[[i]])])
         return(data.frame(main,mpv,mpvl))
     }
     else
@@ -763,7 +764,7 @@ btest<-function(k,n,p,kmin=10,nmin=600){
 #' @export
 eMP<-function(a,b,width,nb){
     refl<-function(x,width,sizex){        
-        abs(x-width+sizex)
+        abs(x-width+sizex-2)
     }
     y<-combHeights(seq(1,width),a,refl(b,width,nb))
     mod<-convolve(y[[1]],y[[2]],type="open")

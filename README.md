@@ -13,7 +13,7 @@ From the command line:
 
 ```sh
 ## Clone the repository
-clone https://github.com/alexjgriffith/mT1.git .
+git clone https://github.com/alexjgriffith/mT1.git
 cd mT1
 
 ## Install 
@@ -30,7 +30,13 @@ if(!require(devtools)){
 }
 ## Install mT1
 devtools::install_github("alexjgriffith/mT1")
+
+## Install mT1 from the develop branch
+## devtools::install_github("alexjgriffith/mT1",ref="develop")
 ```
+
+The main branch is guaranteed to pass `R CMD check .` with no warnings once mT1 is build using `R CMD build --resave-data .`. The merges to the develop branch should always pass, however it is not a guarantee.
+
 
 Note that mT1 also requires the Bioconductor package `Biostrings`.
 

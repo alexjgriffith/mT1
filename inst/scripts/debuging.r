@@ -103,17 +103,20 @@ source("~/r-workspace/project/project.r")
 source("~/r-workspace/project/project-variables.r")
 
 env<-getPRC20(2)
-
 env<-addFasta(env,width=150)
 
+devtools::install_github("alexjgriffith/mT1",ref="develop")
+
+library("mT1")
+
 largeAnalysis<-mT1(env$fasta,unique(c("CANNTG","GATAA",
-                                      mT1_jaspar$jsublM[1:2])),verbose=TRUE)
+                                      mT1_jaspar$jsublM[1:300])),verbose=TRUE)
 
 
 largeAnalysis<-mT1(mT1_fasta,unique(c("CANNTG","GATAA",
                                       mT1_jaspar$jsublM[1:10])),verbose=TRUE)
 
-
+cbind(largeAnalysis$hs[[1]],largeAnalysis$mp[[1]])
 
 par(mfrow=c(1,2))
 plot(combHeights(seq(1,150),abs(largeAnalysis$dens[[1]][,2]-151))[[1]])
@@ -143,7 +146,6 @@ ebox<-combHeights(seq(1,150),c(floor(rnorm(10000,75,30)),floor(runif(10000,1,152
 
 a<-ebox[[1]]/sum(ebox[[1]])
 b<-ebox[[2]]/sum(ebox[[2]])
-c<-rev(a)
 d<-convolve(b,c,type="open")
 
 par(mfrow=c(2,2))
@@ -153,6 +155,16 @@ plot(rev(a),type="l")
 plot(d,type="l")
 
 
+
+b<-c(floor(runif(10000,1,146)))
+
+par(mfrow=c(2,1))
+plot(combHeights(seq(150),b)[[1]],type="l")
+plot(combHeights(seq(150),abs(b-150-1+5))[[1]],type="l")
+
+
+     
+  
 log.env$btest<-list()
 
 lapply(log.env$btest,function(x) dbinom(x[,1],x[,2],x[,3]))
@@ -160,3 +172,31 @@ lapply(log.env$btest,function(x) dbinom(x[,1],x[,2],x[,3]))
 
 
 do.call(convolve,append(combHeights(seq(1,150),largeAnalysis$dens[[1]][,2], abs(largeAnalysis$dens[[2]][,2]-151)),list(type="open")))
+
+
+a<-summary(largeAnalysis)
+
+a[order(a[,3])[1:100],]
+
+png("~/Desktop/GATA-HLTF.png")
+plot(largeAnalysis,i=2)
+dev.off()
+
+
+png("~/Desktop/sox10-HMBOX1.png")
+plot(largeAnalysis,i=1721)
+dev.off()
+
+238              GATAA           CATATGK  -128.30633   15
+
+
+2517          RTCTGGHW           TTTTCCA  -129.56547   13
+
+png("~/Desktop/Tcf3-NFATC2.png")
+plot(largeAnalysis,i=2517)
+dev.off()
+
+
+png("~/Desktop/Ebox-Gata.png")
+plot(largeAnalysis,i=1)
+dev.off()
