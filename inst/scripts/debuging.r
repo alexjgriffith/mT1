@@ -103,11 +103,14 @@ source("~/r-workspace/project/project.r")
 source("~/r-workspace/project/project-variables.r")
 
 env<-getPRC20(2)
-
 env<-addFasta(env,width=150)
 
+devtools::install_github("alexjgriffith/mT1",ref="develop")
+
+library("mT1")
+
 largeAnalysis<-mT1(env$fasta,unique(c("CANNTG","GATAA",
-                                      mT1_jaspar$jsublM[[1]])),verbose=TRUE)
+                                      mT1_jaspar$jsublM[1:300])),verbose=TRUE)
 
 
 largeAnalysis<-mT1(mT1_fasta,unique(c("CANNTG","GATAA",
@@ -169,3 +172,31 @@ lapply(log.env$btest,function(x) dbinom(x[,1],x[,2],x[,3]))
 
 
 do.call(convolve,append(combHeights(seq(1,150),largeAnalysis$dens[[1]][,2], abs(largeAnalysis$dens[[2]][,2]-151)),list(type="open")))
+
+
+a<-summary(largeAnalysis)
+
+a[order(a[,3])[1:100],]
+
+png("~/Desktop/GATA-HLTF.png")
+plot(largeAnalysis,i=2)
+dev.off()
+
+
+png("~/Desktop/sox10-HMBOX1.png")
+plot(largeAnalysis,i=1721)
+dev.off()
+
+238              GATAA           CATATGK  -128.30633   15
+
+
+2517          RTCTGGHW           TTTTCCA  -129.56547   13
+
+png("~/Desktop/Tcf3-NFATC2.png")
+plot(largeAnalysis,i=2517)
+dev.off()
+
+
+png("~/Desktop/Ebox-Gata.png")
+plot(largeAnalysis,i=1)
+dev.off()

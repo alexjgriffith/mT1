@@ -13,7 +13,7 @@ From the command line:
 
 ```sh
 ## Clone the repository
-clone https://github.com/alexjgriffith/mT1.git .
+git clone https://github.com/alexjgriffith/mT1.git
 cd mT1
 
 ## Install 
