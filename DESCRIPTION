@@ -1,12 +1,18 @@
 Package: mT1
 Title: Motifs in Tandem with One Another
-Version: 0.1.4
+Version: 0.9.0
 Author: Alexander Griffith [aut, cre],
-Maintainer: Alexander Griffith <grifita@gmail.com>
+Maintainer: Alexander Griffith <griffitaj@gmail.com>
 Description: Identifies the distance between dna motifs in subsets of the genome. Builds the emperical PDF from individual motifs and treats the normalized convolution as the expected probobilities for the comparision of distance. Can be applied to ChIP-Seq peaks.
+Imports: stats,utils
 Suggests:
 	Biostrings,
-	BSgenome.Hsapiens.UCSC.hg19
-Depends: R (>= 3.1.1)
+	BSgenome.Hsapiens.UCSC.hg19,
+	knitr,
+	rmarkdown
+Depends: R (>= 3.4)
 License: GPL
 LazyData: true
+VignetteBuilder: knitr
+biocViews: Annotation, ChIPSeq
+RoxygenNote: 6.0.1

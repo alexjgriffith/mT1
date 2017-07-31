@@ -11,3 +11,8 @@
 #' @name mT1
 #' @author "Alexander Griffith <griffitaj@@gmail.com>"
 NULL
+
+
+#' @import stats
+#' @import utils
+NULL

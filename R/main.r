@@ -15,6 +15,8 @@
 #' isIUPAC("CAXCTG")
 #' @export
 isIUPAC<-function(string){
+    if(is.null(IUPACDNA))
+        stop("missing IUPACDNA")
     spl<-strsplit(string,split="")[[1]]
     all(unlist(lapply(spl,function(s)!is.null(unlist(IUPACDNA[s])))))
 }
@@ -599,7 +601,7 @@ mT1<-function(fasta,motifs,verbose=FALSE,cl=NULL){
                     if(verbose)
                         checkPind(x[3],pind)                    
                     .ePD(t1[[x[3]]],a[[x[1]]][,2],a[[x[2]]][,2],
-                                 width,motifs[[x[1]]],motifs[[x[2]]])})
+                                 width,motifs[[x[2]]])})
     if(verbose)
         cat("Finalizing mT1 object ...\n")
     ## Build and return the mT1 object
@@ -643,6 +645,10 @@ c.mT1<-function(...,recursive=FALSE){
     width<-unlist(lapply(wl,function(x) x[["width"]]))
     if(any(!(width[1] == width)))
         stop("different widths")
+    else{        
+        width <- width[1]
+        
+    }
     first<-function(...){
         lapply(list(...),function(x) x[[1]])
     }
@@ -651,7 +657,8 @@ c.mT1<-function(...,recursive=FALSE){
             if(is.null(x[[n]]))
                 stop(paste0(n," not found in mT1"))
             x[[n]]}))
-    }    
+    }
+    res$width<-width
     attr(res,"class")<-"mT1"
     return( res)
 }
@@ -663,11 +670,10 @@ c.mT1<-function(...,recursive=FALSE){
 #' @param object A object with an addMotif method
 #' @param motif A Atomic Character containing IUPAC characters
 #' @param ... Variables to pass to object.
+#' @return mT1 object with new motif
 #' @rdname addMotif
 #' @examples
 #' new<-addMotif(mT1_sampleMT1,"CACCTG")
-#' sample<-c(mT1_sampleMT1,new)
-#' sample
 #' @export
 addMotif<-function(object,motif,...){
     UseMethod("addMotif",object)
@@ -709,7 +715,7 @@ addMotif.mT1<-function(object,motif,...){
         })
         prob<-apply(cbind(tofind,seq(dim(tofind)[1])),1,
                     function(x) .ePD(t1[[x[3]]],a[,2],dens[[x[2]]][,2],
-                                     width,,motifs[[x[1]]],motifs[[x[2]]]))
+                                     width,motifs[[x[2]]]))
         large = sapply(t1,function(x) all(unlist(is.na(x))))
         ret<-list(diff=t1,dens=list(a),sig=large,motifs=motif,combs=tofind,
              width=width,
@@ -718,7 +724,7 @@ addMotif.mT1<-function(object,motif,...){
              mp=lapply(prob,function(x) x[["mp"]]),
              pvalue=lapply(prob,function(x) x[["pvalue"]]))
         class(ret)<-"mT1"
-        ret
+        c(object,ret)
     }))
 }
 
@@ -760,6 +766,8 @@ btest<-function(k,n,p,kmin=10,nmin=600){
 #' @param a numerical vector PDF of motif a
 #' @param b numerical vector PDF of motif b
 #' @param width width of fasta indicies
+#' @param nb Number of Basepairs seperating the start of Motif A
+#'           From motif B
 #' @return expectation for each motif distance 
 #' @export
 eMP<-function(a,b,width,nb){
@@ -780,9 +788,11 @@ eMP<-function(a,b,width,nb){
 #' @param a A numerical vector PDF of motif a
 #' @param b A numerical vector PDF of motif b
 #' @param width A numeric atomic, the width of fasta indicies, should
+#' @param ma String motif A
+#' @param mb String motif B
 #' be uniform
 #' @return list(hs,mp,p-values)
-.ePD<-function(t1,a,b,width,ma,mb){
+.ePD<-function(t1,a,b,width,mb){
     ## make sure there are rows in t1
     if(any(is.na(t1))){        
         return(list(hs=NA,mp=NA,pvalue=NA))
@@ -793,15 +803,6 @@ eMP<-function(a,b,width,nb){
         stop("n >hs")
     }
     mp<-eMP(a,b,width,nchar(mb))
-    ##pvalue<-rep(0,length(hs))
-    ##pvalue[hs>10]<-log(dbinom(hs[hs>10],n,mp[hs>10]),10)
-    ##if(n>1000){
-    ##   pvalue<-dpois(hs,n*mp,log=TRUE)
-    ##}
-    ##else
-    ##    pvalue<-dbinom(hs,n,mp,log=TRUE)
-    ##pvalue[hs<1]<-0
-    ##pvalue<-mapply(function(a,b)btest(a,n,b),hs,mp)    
     pvalue<-dbinom(hs,n,mp,log=TRUE)
     pvalue[hs<1]<-0
     list(hs=hs,mp=mp,pvalue=pvalue)
@@ -812,6 +813,7 @@ eMP<-function(a,b,width,nb){
 #' Determines the number of occurrences in each member ... along x.
 #' @param x A sequence of possible values represented as indicies
 #' @param ... The vectors of values to be mapped
+#' @return List with length of x range
 #' @examples
 #' x<-seq(20)
 #' y<-runif(200,1,20)
