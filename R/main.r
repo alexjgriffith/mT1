@@ -216,7 +216,9 @@ diffMotif<-function(fasta,motifs,mloc,cloc,i=1,j=2,min=200,combine="Merged"){
         p3<-mh[!mh[,1] %in% both,]        
         ret<-rbind(p2,p3)
         if(length(both)>0){
-            p1<-cbind(both,apply(cbind(ch[ch[,1] %in% both,2],mh[mh[,1] %in% both,2]),1,function(x) x[which.min(abs(x))]))
+            p1<-cbind(both,apply(cbind(ch[ch[,1] %in% both,2],
+                                       mh[mh[,1] %in% both,2]),1,
+                                 function(x) x[which.min(abs(x))]))
             ret<-rbind(ret,p1)
         }
     }
@@ -312,7 +314,9 @@ findLocs<-function(fasta,mloc,cloc,n1,combine="Merged"){
         p3<-mh[!mh[,1] %in% both,]
         ret<-rbind(p2,p3)
         if(length(both)>0){        
-            p1<-cbind(both,apply(cbind(ch[ch[,1] %in% both,2],mh[mh[,1] %in% both,2]),1,function(x) x[which.min(abs(x))]))
+            p1<-cbind(both,apply(cbind(ch[ch[,1] %in% both,2],
+                                       mh[mh[,1] %in% both,2]),1,
+                                 function(x) x[which.min(abs(x))]))
             ret<-rbind(ret,p1)
         }
         colnames(ret)<-c("loc","pos")
@@ -766,11 +770,10 @@ btest<-function(k,n,p,kmin=10,nmin=600){
 #' @param a numerical vector PDF of motif a
 #' @param b numerical vector PDF of motif b
 #' @param width width of fasta indicies
-#' @param nb Number of Basepairs seperating the start of Motif A
-#'           From motif B
+#' @param nb Difference in length between motif a and motif b
 #' @return expectation for each motif distance 
 #' @export
-eMP<-function(a,b,width,nb){
+eMP<-function(a,b,width,nb=0){
     refl<-function(x,width,sizex){        
         abs(x-width+sizex-2)
     }
@@ -810,9 +813,10 @@ eMP<-function(a,b,width,nb){
 
 #' Combination Heights
 #'
-#' Determines the number of occurrences in each member ... along x.
+#' Determines the number of occurrences in each member of ... along
+#' sequence x.
 #' @param x A sequence of possible values represented as indicies
-#' @param ... The vectors of values to be mapped
+#' @param ... The vectors of values to be mapped to x and summed
 #' @return List with length of x range
 #' @examples
 #' x<-seq(20)
