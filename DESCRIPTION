@@ -3,7 +3,7 @@ Title: Motifs in Tandem with One Another
 Version: 0.99.0
 Author: Alexander Griffith [aut, cre],
 Maintainer: Alexander Griffith <griffitaj@gmail.com>
-Description: Identifies the distance between dna motifs in subsets of the genome. Builds the emperical PDF from individual motifs and treats the normalized convolution as the expected probobilities for the comparision of distance. Can be applied to ChIP-Seq peaks.
+Description: Identifies the distance between DNA motifs in subsets of the genome. Builds the empirical PDF from individual motifs and treats the normalized convolution as the expected probabilities for the comparison of distance. Can be applied to ChIP-Seq peaks.
 Imports: stats,utils
 Suggests:
 	Biostrings,
